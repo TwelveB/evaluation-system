@@ -1,0 +1,58 @@
+services:
+  # 1. Database Service (PostgreSQL)
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1"
+      POSTGRES_DB: evaluation
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # 2. Backend Service (Express)
+  server:
+    build: ./server
+    container_name: express_server
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      DB_USER: postgres
+      DB_PASSWORD: "1"
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: evaluation
+    depends_on:
+      - postgres
+
+  # 3. Frontend Service (React + Vite)
+  client:
+    build: ./client
+    container_name: react_client
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+      #  จุดสำคัญ: ตั้งค่า Watch สำหรับ React
+    develop:
+      watch:
+        - action: sync
+          path: ./client
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./client/package.json
+  # 4. Database Management UI (Adminer)
+  adminer:
+    image: adminer:latest
+    container_name: adminer_ui
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+volumes:
+  pgdata:

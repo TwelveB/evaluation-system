@@ -25,6 +25,15 @@ app.get('/api/students', async (req, res) => {
   }
 });
 
+app.get('/api/check-db', async (req, res) => {
+  try {
+    const result = await db.query('SELECT version();');
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
