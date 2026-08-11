@@ -53,7 +53,7 @@ const handleSubmit = async (e) => {
       });
 
       const result = await res.json();
-      console.log(result);
+      // console.log(result);
 
       if (!res.ok) {
         setErrorMsg(result.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');

@@ -9,7 +9,7 @@ function Administator() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const fetchStudents = async () => {
-    try {
+    try { 
       const res = await fetch('http://localhost:5000/api/students');
       const data = await res.json();
       setStudents(data);
@@ -27,7 +27,7 @@ function Administator() {
     navigate(-1);
   };
 
-  useEffect(() => {
+  useEffect(() => { //ทำงานเมื่อเริ่มหน้าเว็บ
     fetchStudents();
   }, []);
 

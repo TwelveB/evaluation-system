@@ -1,0 +1,93 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+function Login() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const LoginHandle = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch('http://localhost:5000/api/students/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({email, password}),
+      });
+      
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('ไม่สามารถเชื่อมต่อ Server ได้ หรือไม่พบ API Route นี้ (404 Not Found)');
+      }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // บันทึก Token และ ข้อมูลนักเรียนลงใน localStorage
+      localStorage.setItem('studentToken', data.token);
+      localStorage.setItem('studentInfo', JSON.stringify(data.student));
+      // console.log(data.student);
+
+      console.log("Login สำเร็จ");
+      navigate('/Student'); 
+    }
+    catch (err) {
+      console.error('Error fetching students:', err);
+    }
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'email') setEmail(value);
+    if (name === 'password') setPassword(value);
+  };
+
+  const NavigateToPages = (e) => {
+    const ButtonName = e.target.name;
+
+    navigate(ButtonName);
+  };
+
+  return (
+      // <div className="bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-700 text-center max-w-sm">
+       <div className="">
+        <h1 className="text-3xl font-bold text-sky-400 mb-2">Student Login</h1>
+          <input
+                type="text"
+                name="email"
+                value={email}
+                onChange={handleChange}
+                placeholder="อีเมล"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                required 
+          />
+          <input
+                type="text"
+                name="password"
+                value={password}
+                onChange={handleChange}
+                placeholder="รหัสผ่าน"
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                required 
+          />
+        <button 
+        class="mt-5 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        name="Login"
+        onClick={LoginHandle}
+        >
+          Login
+        </button>
+      </div>
+  );
+}
+
+export default Login;
