@@ -62,7 +62,7 @@ const handleSubmit = async (e) => {
       }
       
       console.log("บันทึกข้อมูลสำเร็จ");
-      navigate('/Administator/AddStudent'); 
+      navigate('/Administator/'); 
     } catch (err) {
       console.error('Error adding student:', err);
       setErrorMsg('ไม่สามารถเชื่อมต่อกับ Server ได้');
@@ -73,13 +73,17 @@ const handleSubmit = async (e) => {
     }
   };
 
+  const GoBack = () => {
+    navigate(-1);
+  };
+
   useEffect(() => {
     fetchStudents();
   }, []);
 
+  
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-6">
-      <div className="bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-700 text-center max-w-sm">
+  <div className="">
         <h1 className="text-3xl font-bold text-sky-400 mb-2">หน้าเพิ่มข้อมูลนักเรียน</h1>
         <h2 className="text-slate-400">พร้อมบันทึกข้อมูลของนักเรียน</h2>
 
@@ -90,6 +94,7 @@ const handleSubmit = async (e) => {
                 onChange={handleChange}
                 placeholder="อีเมล"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                required 
           />
           <input
                 type="text"
@@ -98,6 +103,7 @@ const handleSubmit = async (e) => {
                 onChange={handleChange}
                 placeholder="รหัสผ่าน"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                required
           />
           <input
                 type="text"
@@ -106,6 +112,7 @@ const handleSubmit = async (e) => {
                 onChange={handleChange}
                 placeholder="ชื่อจริง"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                required
           />
           <input
                 type="text"
@@ -114,6 +121,7 @@ const handleSubmit = async (e) => {
                 onChange={handleChange}
                 placeholder="นามสกุล"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                required
           />
           <input
                 type="text"
@@ -122,56 +130,22 @@ const handleSubmit = async (e) => {
                 onChange={handleChange}
                 placeholder="เบอร์โทรศัพท์"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
+                required
           />
           <button className="mt-5 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             type="submit"
             onClick={handleSubmit}
           >
-            Button
+            ยืนยัน
           </button>
-        {/* ตารางแสดงผลรายชื่อนักเรียน */}
-        <div>
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-            รายชื่อในฐานข้อมูล ({students.length})
-          </h2>
-
-          {loading ? (
-            <p className="text-sm text-slate-500 text-center py-4 animate-pulse">
-              กำลังโหลดข้อมูลจาก PostgreSQL...
-            </p>
-          ) : students.length === 0 ? (
-            <p className="text-sm text-slate-500 text-center py-4">
-              ยังไม่มีข้อมูลนักเรียนในระบบ
-            </p>
-          ) : ( //เมื่อโหลดเสร็จ
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="text-xs uppercase bg-slate-900/80 text-slate-400">
-                  <tr>
-                    <th className="p-3">เลขที่</th>
-                    <th className="p-3">ชื่อ - นามสกุล</th>
-                    <th className="p-3">อีเมล</th>
-                    <th className="p-3">UUID (studentID)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/50">
-                  {students.map((student) => (
-                    <tr key={student.studentID} className="hover:bg-slate-700/30">
-                      <td className="p-3 font-medium text-sky-400">{student.number || '-'}</td>
-                      <td className="p-3">{`${student.first_name || ''} ${student.last_name || ''}`.trim() || '-'}</td>
-                      <td className="p-3">{student.email}</td>
-                      <td className="p-3 font-mono text-xs text-slate-500 truncate max-w-[120px]">
-                        {student.student_id}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <br></br>
+          <button className="mt-5 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            type="ย้อนกลับ"
+            onClick={GoBack}
+          >
+            ย้อนกลับ
+          </button>
         </div>
-      </div>
-    </div>
   );
 }
 

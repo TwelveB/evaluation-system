@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function App() {
+function Login() {
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
 
@@ -23,13 +23,7 @@ function App() {
   const NavigateToPages = (e) => {
     const ButtonName = e.target.name;
 
-    if (ButtonName == "Administator") {
-      navigate("/Administator/Login");
-    }else if (ButtonName == "Student") {
-      navigate("/Student/Login");
-    }else if (ButtonName == "Assessor") {
-      navigate("/Assessor/Login");
-    };
+    navigate(ButtonName);
   };
 
   useEffect(() => {
@@ -42,29 +36,22 @@ function App() {
         <h1 className="text-3xl font-bold text-sky-400 mb-2">React + Tailwind</h1>
         <p className="text-slate-400">ฝั่ง Frontend พร้อมใช้งานแล้ว!</p>
         <button 
-        class="mt-5 mr-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        class="mt-5 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         name="Administator"
         onClick={NavigateToPages}
         >
-          Admin
-        </button>
-        <button 
-        class="mt-5 mr-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        name="Student"
-        onClick={NavigateToPages}
-        >
-          Student
+          Button
         </button>
                 <button 
-        class="mt-5 mr-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        name="Assessor"
+        class="mt-5 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        name="Administator"
         onClick={NavigateToPages}
         >
-          Assessor
+          Button
         </button>
       </div>
     </div>
   );
 }
 
-export default App;
+export default Login;

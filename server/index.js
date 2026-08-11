@@ -14,7 +14,7 @@ app.use(express.json());
 app.get('/api/students', async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM "studentTB"');
-    res.json(result.rows)
+    res.json(result.rows);
     // const result = await db.query('SELECT NOW()');
     // res.json({
     //    message: 'เชื่อมต่อ PostgreSQL สำเร็จ!',
