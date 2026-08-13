@@ -12,7 +12,7 @@ const pool = new Pool({
 
 // ตรวจสอบการเชื่อมต่อ
 pool.on('connect', () => {
-  console.log('Connected to PostgreSQL Database successfully');
+  console.log('Connected to PostgreSQL Database successfully Yay');
 });
 
 module.exports = {
