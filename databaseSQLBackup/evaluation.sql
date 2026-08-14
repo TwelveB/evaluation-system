@@ -3,6 +3,26 @@
 CREATE DATABASE "evaluation";
 \connect "evaluation";
 
+DROP TABLE IF EXISTS "adminTB";
+DROP SEQUENCE IF EXISTS "public"."adminTB_admin_id_seq";
+CREATE SEQUENCE "public"."adminTB_admin_id_seq" INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
+
+CREATE TABLE "public"."adminTB" (
+    "admin_id" integer DEFAULT nextval('public."adminTB_admin_id_seq"') NOT NULL,
+    "email" character varying(50) NOT NULL,
+    "password_hash" character varying(255) NOT NULL,
+    "first_name" character varying,
+    "last_name" character varying(50),
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "profile_picture" text,
+    "number" character varying(20),
+    CONSTRAINT "adminTB_pkey" PRIMARY KEY ("admin_id")
+)
+WITH (oids = false);
+
+CREATE UNIQUE INDEX "adminTB_email" ON public."adminTB" USING btree (email);
+
+
 DROP TABLE IF EXISTS "scoreTB";
 DROP SEQUENCE IF EXISTS "public"."scoreTB_score_id_seq";
 CREATE SEQUENCE "public"."scoreTB_score_id_seq" INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
@@ -49,16 +69,18 @@ CREATE TABLE "public"."studentTB" (
     "first_name" character varying(50),
     "last_name" character varying(50),
     "number" character varying(20),
+    "profile_picture" text,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
     CONSTRAINT "studnetTB_pkey" PRIMARY KEY ("student_id")
 )
 WITH (oids = false);
 
 CREATE UNIQUE INDEX "studnetTB_email" ON public."studentTB" USING btree (email);
 
-INSERT INTO "studentTB" ("student_id", "email", "password_hash", "first_name", "last_name", "number") VALUES
-(16,	'Test2@gmail.com',	'$2b$10$l6fM6Jkqq78Q792xuZeR6eEQr7SupMYQj7qd8z1MklFvPFi/31Wfi',	'Test',	'D',	'1');
+INSERT INTO "studentTB" ("student_id", "email", "password_hash", "first_name", "last_name", "number", "profile_picture", "created_at") VALUES
+(16,	'Test2@gmail.com',	'$2b$10$l6fM6Jkqq78Q792xuZeR6eEQr7SupMYQj7qd8z1MklFvPFi/31Wfi',	'Test',	'D',	'1',	NULL,	'2026-08-14 16:50:08.184131+00');
 
 ALTER TABLE ONLY "public"."scoreTB" ADD CONSTRAINT "scoreTB_section_id_fkey" FOREIGN KEY (section_id) REFERENCES "public"."sectionTB"(section_id);
 ALTER TABLE ONLY "public"."scoreTB" ADD CONSTRAINT "scoreTB_student_id_fkey" FOREIGN KEY (student_id) REFERENCES "public"."studentTB"(student_id);
 
--- 2026-08-09 14:38:15 UTC
+-- 2026-08-14 16:50:57 UTC

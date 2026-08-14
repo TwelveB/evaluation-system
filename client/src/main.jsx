@@ -10,6 +10,8 @@ import AddStudent from './pages/Admin/AddStudent.jsx'
 
 import LoginOutlet from './pages/Login/LoginOutlet.jsx'
 import StudentLogin from './pages/Login/StudentLogin.jsx'
+import AdminLogin from './pages/Login/AdminLogin.jsx'
+import AssessorLogin from './pages/Login/AssessorLogin.jsx'
 
 import Student from './pages/Student/Student.jsx'
 
@@ -38,8 +40,8 @@ createRoot(document.getElementById('root')).render(
         {/* </Route> */}
         <Route path="/Login" element={<LoginOutlet/>} >
           <Route path="Student" element={<StudentLogin/>} />
-          {/* <Route path="Admin" element={<AdminLogin/>} />
-          <Route path="Assessor" element={<AssessorLogin/>} /> */}
+          <Route path="Admin" element={<AdminLogin/>} />
+          <Route path="Assessor" element={<AssessorLogin/>} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -76,7 +76,7 @@ app.post('/api/students', async (req, res) => {
 });
 
 //method post login
-app.post('/api/students/login', async (req, res) => {
+app.post('/api/login/students/', async (req, res) => {
   try {
     const { email, password} = req.body;
     

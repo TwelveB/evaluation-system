@@ -14,7 +14,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:5000/api/login/students/', {
+      const res = await fetch('http://localhost:5000/api/students/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({email, password}),
@@ -61,7 +61,7 @@ function Login() {
   return (
       // <div className="bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-700 text-center max-w-sm">
        <div className="">
-        <h1 className="text-3xl font-bold text-sky-400 mb-2">{Session.Student} Login</h1>
+        <h1 className="text-3xl font-bold text-sky-400 mb-2">{Session.Admin} Login</h1>
           <input
                 type="text"
                 name="email"
