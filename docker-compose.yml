@@ -28,10 +28,10 @@ services:
     depends_on:
       - postgres
 
-  # 3. Frontend Service (React + Vite)
+  # 3. Frontend Service (Vue + Vite)
   client:
     build: ./client
-    container_name: react_client
+    container_name: vue_client
     ports:
       - "5173:5173"
     depends_on:

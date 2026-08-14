@@ -1,4 +1,19 @@
-.counter {
+/* Animation Delay */
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+/* Smooth Transitions */
+button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glassmorphism Effect */
+.backdrop-blur-xl {
+  backdrop-filter: blur(20px);
+}
+
+/* Counter */
   font-size: 16px;
   padding: 5px 10px;
   border-radius: 5px;
