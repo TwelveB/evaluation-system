@@ -23,16 +23,19 @@ function Administator() {
   const GoToAddStudent = () => {
     navigate('/Administator/AddStudent');
   };
-  const GoBack = () => {
-    navigate(-1);
-  };
+  const handleLogout = () => {
+      // 1. ลบ Token และข้อมูลนักเรียนทั้งหมดออกจาก localStorage
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminInfo');
+      // 2. ส่งนักเรียนกลับไปหน้า Login
+      navigate('/Login/Admin');
+    };
 
   useEffect(() => { //ทำงานเมื่อเริ่มหน้าเว็บ
     fetchStudents();
   }, []);
 
   return (
-    
       <div className="">
         <h1 className="text-3xl font-bold text-sky-400 mb-2">Welcome Admin</h1>
         <h2 className="text-slate-400">พร้อมบันทึกข้อมูลของนักเรียน</h2>

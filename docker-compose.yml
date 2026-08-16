@@ -31,7 +31,7 @@ services:
   # 3. Frontend Service (Vue + Vite)
   client:
     build: ./client
-    container_name: vue_client
+    container_name: react_client
     ports:
       - "5173:5173"
     depends_on:

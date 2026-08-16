@@ -28,6 +28,7 @@ createRoot(document.getElementById('root')).render(
       {/* Routes */}
       <Routes>
         <Route path="/" element={<App/>} />
+
         <Route path="/Student" element={<Student/>} />
 
         <Route path="/Administator" element={<Administator/>} >
@@ -37,7 +38,7 @@ createRoot(document.getElementById('root')).render(
         </Route>
         {/* <Route path="/Student" element={<Administator/>} > */}
           
-        {/* </Route> */}
+        {/* </Route> outlet */}
         <Route path="/Login" element={<LoginOutlet/>} >
           <Route path="Student" element={<StudentLogin/>} />
           <Route path="Admin" element={<AdminLogin/>} />

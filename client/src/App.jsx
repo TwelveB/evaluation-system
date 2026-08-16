@@ -20,6 +20,15 @@ function App() {
     }
   };
 
+  const checkToken = () => {
+    const studentToken = localStorage.getItem("studentToken");
+    if (studentToken) {
+      navigate("/Student");
+    }else {
+      return
+    }
+  }
+
   const NavigateToPages = (path) => {
     navigate(path);
   };

@@ -14,16 +14,16 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:5000/api/students/login', {
+      const res = await fetch('http://localhost:5000/api/login/admin/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({email, password}),
       });
       
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('ไม่สามารถเชื่อมต่อ Server ได้ หรือไม่พบ API Route นี้ (404 Not Found)');
-      }
+      // const contentType = res.headers.get('content-type');
+      // if (!contentType || !contentType.includes('application/json')) {
+      //   throw new Error('ไม่สามารถเชื่อมต่อ Server ได้ หรือไม่พบ API Route นี้ (404 Not Found)');
+      // }
 
       const data = await res.json();
 
@@ -34,15 +34,14 @@ function Login() {
       }
       
       // บันทึก Token และ ข้อมูลนักเรียนลงใน localStorage
-      localStorage.setItem('studentToken', data.token);
-      localStorage.setItem('studentInfo', JSON.stringify(data.student));
-      // console.log(data.student);
+      localStorage.setItem('adminToken', data.token);
+      localStorage.setItem('adminInfo', JSON.stringify(data.admin));
 
       console.log("Login สำเร็จ");
-      navigate('/Student'); 
+      navigate('/Administator/Dashboard'); 
     }
     catch (err) {
-      console.error('Error fetching students:', err);
+      console.error('Error fetching admin:', err);
     }
   }
 
