@@ -19,15 +19,15 @@ router.post('/student', async (req, res) => {
     }
     //ค้นหาแอคเคาท์ที่มีอีเมลเดียวกันกับที่ส่งมา 1$ และหลัง , เอาไว้ป้องกัน SQL injection
     const result = await db.query(
-      'SELECT * FROM public."studentTB" WHERE email = $1',
+      'SELECT * FROM studenttb WHERE email = ?',
       [email]
     );
     
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     };
 
-    const student = result.rows[0];
+    const student = result[0];
 
     const isMatch = await bcrypt.compare(password, student.password_hash);
     if (!isMatch) {
@@ -47,6 +47,7 @@ router.post('/student', async (req, res) => {
       student: {
         student_id: student.student_id,
         first_name: student.first_name,
+        last_name: student.last_name,
         email: student.email
       }
     });
@@ -72,15 +73,15 @@ router.post('/admin', async (req, res) => {
     }
     //ค้นหาแอคเคาท์ที่มีอีเมลเดียวกันกับที่ส่งมา 1$ และหลัง , เอาไว้ป้องกัน SQL injection
     const result = await db.query(
-      'SELECT * FROM public."adminTB" WHERE email = $1',
+      'SELECT * FROM adminTB WHERE email = ?',
       [email]
     );
     
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     };
 
-    const admin = result.rows[0];
+    const admin = result[0];
 
     const isMatch = await bcrypt.compare(password, admin.password_hash);
     if (!isMatch) {

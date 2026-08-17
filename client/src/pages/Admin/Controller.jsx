@@ -20,6 +20,10 @@ function Administator() {
     }
   };
 
+  const GoBack = () => {
+    navigate(-1);
+  }
+
   const GoToAddStudent = () => {
     navigate('/Administator/AddStudent');
   };

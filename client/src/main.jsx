@@ -12,6 +12,7 @@ import LoginOutlet from './pages/Login/LoginOutlet.jsx'
 import StudentLogin from './pages/Login/StudentLogin.jsx'
 import AdminLogin from './pages/Login/AdminLogin.jsx'
 import AssessorLogin from './pages/Login/AssessorLogin.jsx'
+import LoginDashboard from './pages/Login/Dashboard.jsx'
 
 import Student from './pages/Student/Student.jsx'
 
@@ -37,8 +38,10 @@ createRoot(document.getElementById('root')).render(
           <Route path="AddStudent" element={<AddStudent/>} />
         </Route>
         {/* <Route path="/Student" element={<Administator/>} > */}
+
+        <Route path="/Login" element={<LoginDashboard/>} />
           
-        {/* </Route> outlet */}
+        {/* Route outlet */}
         <Route path="/Login" element={<LoginOutlet/>} >
           <Route path="Student" element={<StudentLogin/>} />
           <Route path="Admin" element={<AdminLogin/>} />

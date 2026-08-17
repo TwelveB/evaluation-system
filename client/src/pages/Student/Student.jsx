@@ -18,7 +18,7 @@ function Login() {
       navigate(-1);
       return
     }else {
-      setStudentInfo(JSON.parse(studentInfo));
+      setStudentInfo(JSON.parse(Info));
       console.log(Info);
       console.log(studentInfo);
       setLoading(false);
@@ -49,7 +49,7 @@ function Login() {
         {loading ? (
           <p className="text-slate-400">กำลังโหลดข้อความ...</p>
         ) :
-        (<p className="text-slate-400">สวัสดีครับคุณ {studentInfo.first_name}</p>)
+        (<p className="text-slate-400">สวัสดีครับคุณ {studentInfo.first_name} {studentInfo.last_name}</p>)
         }
         <button
         class="mt-5 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"

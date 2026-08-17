@@ -17,12 +17,12 @@ const SECRET_KEY = process.env.SECRET_KEY || "1";
 // Test Route ดึงข้อมูลเวลาจาก PostgreSQL
 router.get('/', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM "studentTB"');
-    res.json(result.rows);
+    const result = await db.query('SELECT * FROM studenttb');
+    res.json(result);
     // const result = await db.query('SELECT NOW()');
     // res.json({
-    //    message: 'เชื่อมต่อ PostgreSQL สำเร็จ!',
-    //    db_time: result.rows[0].now,
+    //    message: 'เชื่อมต่อ Mariadb สำเร็จ!',
+    //    db_time: result[0].now,
     // });
   } catch (err) {
     console.error('Database Connection Error:', err.message);
@@ -47,23 +47,35 @@ router.post('/', async (req, res) => {
     }
 
     const queryText = `
-      INSERT INTO public."studentTB" (email, password_hash, first_name, last_name, "number")
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING "student_id", email, first_name, last_name, "number" 
+      INSERT INTO studenttb (email, password_hash, first_name, last_name, number)
+      VALUES (?, ?, ?, ?, ?)
     `;
-    //Values ใช้ $ เพราะทำเป็นค่าไว้สำหรับใส่ค่าในอาเรย์ด้านล่าง เพื่อใช้กับ db.query(querytext, values ค่าที่นำไปแทนใน $1,$2)
-    //Returining ใช้ให้ Postgres ส่งคืนค่ากลับมาตามค่าที่ระบุไว้
     
     const values = [
       email,
-      finalHash,
+      password,
       first_name || null,
       last_name || null,
       number || null,
     ];
     
     const newStudent = await db.query(queryText, values);
-    res.status(201).json(newStudent.rows[0]);
+
+    const newStudentId = Number(newStudent.insertId);
+
+    // 3. SELECT ข้อมูลของแถวนั้นออกมา (เลียนแบบพฤติกรรม RETURNING)
+    const selectQuery = `
+      SELECT student_id, email, first_name, last_name, number 
+      FROM studenttb 
+      WHERE student_id = ?
+    `;
+    const studentData = await db.query(selectQuery, [newStudentId]);
+
+    // 4. ส่งข้อมูลแถวนั้นกลับไปให้ React (studentData[0] คือ Object ข้อมูลแถวนั้น)
+    res.status(201).json(studentData[0]);
+
+
+    // res.status(201).json(newStudent[0]);
 
   } catch (err) {
     console.error('Database Connection Error:', err.message);

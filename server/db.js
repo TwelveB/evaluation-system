@@ -1,21 +1,23 @@
-const { Pool } = require('pg');
+const mariadb = require('mariadb');
 require('dotenv').config();
 
-// สร้าง Connection Pool เชื่อมต่อไปยัง PostgreSQL
-const pool = new Pool({
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
+// สร้าง Connection Pool เชื่อมต่อไปยัง mariadb
+const pool = mariadb.createPool({
+     host: process.env.DB_HOST, 
+     user: process.env.DB_USER, 
+     password: process.env.DB_PASSWORD,
+     database: process.env.DB_NAME,
+     connectionLimit: 5
 });
 
 // ตรวจสอบการเชื่อมต่อ
-pool.on('connect', () => {
-  console.log('From db.js: Connected to PostgreSQL Database successfully Yay');
-});
+pool.getConnection()
+  .then(conn => {
+    console.log('From db.js: Connected to MariaDB Database successfully Yay!');
+    conn.release(); // อย่าลืมคืน connection เข้า pool
+  })
+  .catch(err => {
+    console.error('From db.js: Error connecting to MariaDB:', err);
+  });
 
-module.exports = {
-  //ส่งออกให้สามารถใช้คำสั่ง query ได้ //เมื่อไฟล์อื่นเรียกใช้เช่น db.query ก็จะเรียก pool.query
-  query: (text, params) => pool.query(text, params),
-};
+module.exports = pool;
