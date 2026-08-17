@@ -12,7 +12,7 @@ const SECRET_KEY = process.env.SECRET_KEY || "1";
 // Test Route ดึงข้อมูลเวลาจาก PostgreSQL
 router.get('/', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM "adminTB"');
+    const result = await db.query('SELECT * FROM "admins"');
     res.json(result.rows);
   } catch (err) {
     console.error('Database Connection Error:', err.message);

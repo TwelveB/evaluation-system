@@ -27,6 +27,9 @@ function Administator() {
   const GoToAddStudent = () => {
     navigate('/Administator/AddStudent');
   };
+  const GoToAddAssessor = () => {
+    navigate('/Administator/AddAssessor');
+  };
   const handleLogout = () => {
       // 1. ลบ Token และข้อมูลนักเรียนทั้งหมดออกจาก localStorage
       localStorage.removeItem('adminToken');
@@ -47,9 +50,17 @@ function Administator() {
         onClick={GoToAddStudent}>
           Add Student
         </button>
+        <button class="mt-5 mr-1 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        onClick={GoToAddAssessor}>
+          Add Assessor
+        </button>
         <button class="mt-5 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
         onClick={GoBack}>
           Back
+        </button> <br></br>
+        <button class="mt-5 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        onClick={handleLogout}>
+          Logout
         </button>
         {/* ตารางแสดงผลรายชื่อนักเรียน */}
         <div>
@@ -70,8 +81,8 @@ function Administator() {
               <table className="w-full text-left text-sm text-slate-300">
                 <thead className="text-xs uppercase bg-slate-900/80 text-slate-400">
                   <tr>
+                    <th className="p-3">รหัสประจำตัว</th>
                     <th className="p-3">ชื่อ - นามสกุล</th>
-                    <th className="p-3">อีเมล</th>
                     <th className="p-3">เบอร์โทรศัพท์</th>
                     <th className="p-3">UUID (studentID)</th>
                   </tr>
@@ -79,9 +90,9 @@ function Administator() {
                 <tbody className="divide-y divide-slate-700/50">
                   {students.map((student) => (
                     <tr key={student.studentID} className="hover:bg-slate-700/30">
-                      <td className="p-3 font-medium text-sky-400">{`${student.first_name || ''} ${student.last_name || ''}`.trim() || '-'}</td>
-                      <td className="p-3">{student.email}</td>
-                      <td className="p-3">{student.number || '-'}</td>
+                      <td className="p-3 font-medium text-sky-400">{student.student_code}</td>
+                      <td className="p-3">{`${student.first_name || ''} ${student.last_name || ''}`.trim() || '-'}</td>
+                      <td className="p-3">{student.phone_number || '-'}</td>
                       <td className="p-3 font-mono text-xs text-slate-500 truncate max-w-[120px]">
                         {student.studentID}
                       </td>

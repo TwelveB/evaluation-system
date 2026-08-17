@@ -16,12 +16,14 @@ app.use(express.json());
 
 const studentRoutes = require('./routes/student.js');
 const adminRoutes = require('./routes/admin.js');
+const assessorRoutes = require('./routes/assessor.js');
 const loginRoutes = require('./routes/login.js');
 
 const SECRET_KEY = process.env.SECRET_KEY || "1";
 
 app.use('/api/students', studentRoutes);
 app.use('/api/admins', adminRoutes);
+app.use('/api/assessor', assessorRoutes);
 app.use('/api/login', loginRoutes);
 
 app.get('/api/check-db', async (req, res) => {

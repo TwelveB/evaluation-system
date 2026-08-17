@@ -12,15 +12,15 @@ const SECRET_KEY = process.env.SECRET_KEY || "1";
 //method post student login
 router.post('/student', async (req, res) => {
   try {
-    const { email, password} = req.body;
+    const { student_code, password} = req.body;
     
-    if (!email || !password) {
+    if (!student_code || !password) {
       return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
     }
     //ค้นหาแอคเคาท์ที่มีอีเมลเดียวกันกับที่ส่งมา 1$ และหลัง , เอาไว้ป้องกัน SQL injection
     const result = await db.query(
-      'SELECT * FROM studenttb WHERE email = ?',
-      [email]
+      'SELECT * FROM studenttb WHERE student_code = ?',
+      [student_code]
     );
     
     if (result.length === 0) {
@@ -36,7 +36,7 @@ router.post('/student', async (req, res) => {
 
     //สร้าง JWT Token ส่งกลับไปฝั่ง Client
     const token = jwt.sign(
-      { student_id: student.student_id, email: student.email },
+      { student_id: student.student_id, student_code: student.student_code },
       SECRET_KEY,
       { expiresIn: '1d' }
     );
@@ -48,16 +48,12 @@ router.post('/student', async (req, res) => {
         student_id: student.student_id,
         first_name: student.first_name,
         last_name: student.last_name,
-        email: student.email
+        student_code: student.student_code
       }
     });
 
   } catch (err) {
     console.error('Database Connection Error:', err.message);
-
-    if (err.code === '23505') {
-      return res.status(400).json({ error: 'อีเมลนี้ถูกใช้งานแล้วในระบบ' });
-    }
 
     res.status(500).json({ error: 'Server Error' });
   }
@@ -66,15 +62,15 @@ router.post('/student', async (req, res) => {
 //method post admin login
 router.post('/admin', async (req, res) => {
   try {
-    const { email, password} = req.body;
+    const { username, password} = req.body;
     
-    if (!email || !password) {
+    if (!username || !password) {
       return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
     }
     //ค้นหาแอคเคาท์ที่มีอีเมลเดียวกันกับที่ส่งมา 1$ และหลัง , เอาไว้ป้องกัน SQL injection
     const result = await db.query(
-      'SELECT * FROM adminTB WHERE email = ?',
-      [email]
+      'SELECT * FROM admins WHERE username = ?',
+      [username]
     );
     
     if (result.length === 0) {
@@ -90,7 +86,7 @@ router.post('/admin', async (req, res) => {
 
     //สร้าง JWT Token ส่งกลับไปฝั่ง Client
     const token = jwt.sign(
-      { admin_id: admin.admin_id, email: admin.email },
+      { admin_id: admin.admin_id, username: admin.username },
       SECRET_KEY,
       { expiresIn: '1d' }
     );
@@ -101,14 +97,72 @@ router.post('/admin', async (req, res) => {
       admin: {
         admin_id: admin.admin_id,
         first_name: admin.first_name,
-        email: admin.email
+        username: admin.username
       }
     });
 
   } catch (err) {
     console.error('Database Connection Error:', err.message);
 
-    if (err.code === '23505') {
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
+//method post เพิ่มนักเรียน
+router.post('/', async (req, res) => {
+  try {
+    const { student_code, password, first_name, last_name, phone_number, group } = req.body;
+    
+    if (!student_code || !password) {
+      return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
+    }
+
+    // ทำการ Hash รหัสผ่านก่อนบันทึก (หากมีการส่งรหัสผ่านเข้ามา)
+    let finalHash = null;
+    if (password && password.trim() !== '') {
+      const saltRounds = 10; // ระดับความซับซ้อนของการเข้ารหัส (มาตรฐานคือ 10)
+      finalHash = await bcrypt.hash(password, saltRounds);
+    }
+
+    const queryText = `
+      INSERT INTO students (
+        student_code, 
+        password_hash, 
+        phone_number,
+        first_name, 
+        last_name,
+        student_group
+      )
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    
+    const values = [
+      student_code,
+      finalHash,
+      phone_number || null,
+      first_name,
+      last_name,
+      group || null,
+    ];
+    
+    const newStudent = await db.query(queryText, values);
+
+    const newStudentId = Number(newStudent.insertId);
+
+    // 3. SELECT ข้อมูลของแถวนั้นออกมา (เลียนแบบพฤติกรรม RETURNING)
+    const selectQuery = `
+      SELECT student_id, student_code, first_name, last_name, phone_number 
+      FROM students 
+      WHERE student_id = ?
+    `;
+    const studentData = await db.query(selectQuery, [newStudentId]);
+
+    // 4. ส่งข้อมูลแถวนั้นกลับไปให้ React (studentData[0] คือ Object ข้อมูลแถวนั้น)
+    res.status(201).json(studentData[0]);
+  } catch (err) {
+    console.error('Database Connection Error:', err.message);
+
+    if (err.code === '1062') {
       return res.status(400).json({ error: 'อีเมลนี้ถูกใช้งานแล้วในระบบ' });
     }
 

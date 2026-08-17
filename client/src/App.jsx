@@ -179,7 +179,7 @@ function App() {
                       <td className="py-3 px-4 font-medium text-white">{student.first_name|| 'N/A'}</td>
                       <td className="py-3 px-4">
                         {student.status === 1 ? (                        
-                          <span class="active">
+                        <span class="active">
                           Active
                         </span>) : (
                         <span class="inactive">

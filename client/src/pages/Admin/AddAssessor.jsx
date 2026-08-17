@@ -6,14 +6,14 @@ function AddStudent() {
   const [students, setStudents] = useState([]);
 
   //สำหรับเก็บข้อมูลก่อนส่งไปบันทึก
-  // student_code, password, first_name, last_name, phone_number, group 
+  // student_code, password, first_name, last_name, phone_number, department 
   const [formData, setFormData] = useState({
-    student_code: '',
+    username: '',
     password: '',
     first_name: '',
     last_name: '',
     phone_number: '',
-    group: '',
+    department: '',
   });
 
   const [IsSubmitting, setIsSubmitting] = useState(false);
@@ -40,7 +40,7 @@ const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!formData.student_code.trim() || 
+    if (!formData.username.trim() || 
     !formData.password.trim() ||
     !formData.first_name.trim() ||
     !formData.last_name.trim()
@@ -52,7 +52,7 @@ const handleSubmit = async (e) => {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/students', {
+      const res = await fetch('http://localhost:5000/api/assessor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -67,12 +67,12 @@ const handleSubmit = async (e) => {
         return;
       }
       setFormData({
-        student_code: '',
+        username: '',
         password: '',
         first_name: '',
         last_name: '',
         phone_number: '',
-        group: '',
+        department: '',
       });
       console.log("บันทึกข้อมูลสำเร็จ");
       // navigate('/Administator/'); 
@@ -101,10 +101,10 @@ const handleSubmit = async (e) => {
 
           <input
                 type="text"
-                name="student_code" //ต้องเป็นชื่อเดียวกับใน form เพราะอะไรไปดูในฟังก์ชั่น handlechange
-                value={formData.student_code}
+                name="username" //ต้องเป็นชื่อเดียวกับใน form เพราะอะไรไปดูในฟังก์ชั่น handlechange
+                value={formData.username}
                 onChange={handleChange}
-                placeholder="รหัสนักเรียน เช่น ET-001 หรือ 001"
+                placeholder="ชื่อผู้ใช้งานของผู้ประเมิน"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"
                 required 
           />
@@ -146,8 +146,8 @@ const handleSubmit = async (e) => {
           />
           <input
                 type="text"
-                name="group"
-                value={formData.group}
+                name="department"
+                value={formData.department}
                 onChange={handleChange}
                 placeholder="กลุ่ม/คลาส/โรงเรียนของนักเรียน"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"

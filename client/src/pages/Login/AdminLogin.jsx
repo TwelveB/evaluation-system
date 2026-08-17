@@ -4,7 +4,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 function Login() {
   const Session = useOutletContext(); 
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setusername] = useState('');
   const [password, setPassword] = useState('');
 
   const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ function Login() {
       const res = await fetch('http://localhost:5000/api/login/admin/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({email, password}),
+        body: JSON.stringify({username, password}),
       });
       
       // const contentType = res.headers.get('content-type');
@@ -29,7 +29,7 @@ function Login() {
 
       if (!res.ok) {
         setErrorMsg(data.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-        setIsSubmitting(false);
+        // setIsSubmitting(false);
         return;
       }
       
@@ -47,7 +47,7 @@ function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'email') setEmail(value);
+    if (name === 'username') setusername(value);
     if (name === 'password') setPassword(value);
   };
 
@@ -63,8 +63,8 @@ function Login() {
         <h1 className="text-3xl font-bold text-sky-400 mb-2">{Session.Admin} Login</h1>
           <input
                 type="text"
-                name="email"
-                value={email}
+                name="username"
+                value={username}
                 onChange={handleChange}
                 placeholder="อีเมล"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"

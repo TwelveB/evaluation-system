@@ -7,6 +7,7 @@ import App from './App.jsx'
 import Administator from './pages/Admin/Administator.jsx'
 import Controller from './pages/Admin/Controller.jsx'
 import AddStudent from './pages/Admin/AddStudent.jsx'
+import AddAssessor from './pages/Admin/AddAssessor.jsx'
 
 import LoginOutlet from './pages/Login/LoginOutlet.jsx'
 import StudentLogin from './pages/Login/StudentLogin.jsx'
@@ -35,6 +36,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/Administator" element={<Administator/>} >
           <Route index element={<Controller/>} />
           <Route path="Dashboard" element={<Controller/>} />
+          <Route path="AddAssessor" element={<AddAssessor/>} />
           <Route path="AddStudent" element={<AddStudent/>} />
         </Route>
         {/* <Route path="/Student" element={<Administator/>} > */}
