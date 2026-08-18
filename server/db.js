@@ -7,7 +7,10 @@ const pool = mariadb.createPool({
      user: process.env.DB_USER, 
      password: process.env.DB_PASSWORD,
      database: process.env.DB_NAME,
-     connectionLimit: 5
+     //ฟังก์ชั่นเสริม
+     connectionLimit: 5,
+     insertIdAsNumber: true,
+     bigIntAsNumber: true // 👈 เพิ่มบรรทัดนี้เพื่อให้แปลง BIGINT เป็น Number ใน JS
 });
 
 // ตรวจสอบการเชื่อมต่อ

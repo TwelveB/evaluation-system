@@ -97,25 +97,25 @@ router.get('/showEvaluationStudent/:id', async (req, res) => {
   }
 });
 
-router.get('/showEvaluations', async (req, res) => {
-  try {
-    const result = await db.query('SELECT * FROM evaluations');
-    res.json(result);
-  } catch (err) {
-    console.error('Database Connection Error:', err.message);
-    res.status(500).json({ error: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้' });
-  }
-});
+// router.get('/showEvaluations', async (req, res) => {
+//   try {
+//     const result = await db.query('SELECT * FROM evaluations');
+//     res.json(result);
+//   } catch (err) {
+//     console.error('Database Connection Error:', err.message);
+//     res.status(500).json({ error: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้' });
+//   }
+// });
 
-router.get('/showCriteria', async (req, res) => {
-  try {
-    const result = await db.query('SELECT * FROM criteria');
-    res.json(result);
-  } catch (err) {
-    console.error('Database Connection Error:', err.message);
-    res.status(500).json({ error: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้' });
-  }
-});
+// router.get('/showCriteria', async (req, res) => {
+//   try {
+//     const result = await db.query('SELECT * FROM criteria');
+//     res.json(result);
+//   } catch (err) {
+//     console.error('Database Connection Error:', err.message);
+//     res.status(500).json({ error: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้' });
+//   }
+// });
 
 router.get('/showEvaluations:id=:id', async (req, res) => {
   try {
@@ -130,6 +130,83 @@ router.get('/showEvaluations:id=:id', async (req, res) => {
   } catch (err) {
     console.error('Database Connection Error:', err.message);
     res.status(500).json({ error: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้' });
+  }
+});
+
+// ดึงข้อมูลเกณฑ์การประเมิน (criteria) พร้อมคะแนนประเมิน (evaluation_scores) ของ evaluation_id นั้นๆ
+router.get('/evaluation-criteria/:evaluation_id', async (req, res) => {
+  try {
+    const evaluation_id = parseInt(req.params.evaluation_id);
+
+    // เช็คว่าส่งค่า ID มาเป็นตัวเลขถูกต้องหรือไม่
+    if (isNaN(evaluation_id)) {
+      return res.status(400).json({ error: 'รหัส evaluation_id ไม่ถูกต้อง' });
+    }
+
+    const queryText = `
+      SELECT 
+        c.criterion_id,
+        c.section_id,
+        c.title,
+        c.description,
+        c.weight,
+        c.evaluation_type,
+        c.requires_evidence,
+        c.min_score,
+        c.max_score,
+        es.score_id,
+        es.score,
+        es.comment
+      FROM criteria c
+      LEFT JOIN evaluation_scores es 
+        ON c.criterion_id = es.criterion_id 
+        AND es.evaluation_id = ?
+      ORDER BY c.section_id ASC, c.criterion_id ASC
+    `;
+
+    const result = await db.query(queryText, [evaluation_id]);
+    
+    // ส่งผลลัพธ์กลับไป (หากใช้ mariadb driver บางตัว ตัวแปรอาจจะซ้อนอยู่ใน result หรือ rows)
+    res.json(result);
+  } catch (err) {
+    // 💡 ดูข้อความ Error ที่แท้จริงตรงนี้ใน Terminal
+    console.error('Database Query Error:', err); 
+    res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลเกณฑ์การประเมินได้', details: err.message });
+  }
+});
+
+// บันทึกคะแนนประเมิน (บันทึกใหม่ หรือ อัปเดตหากมีคีย์ซ้ำ)
+router.post('/save-scores', async (req, res) => {
+  try {
+    // scores Expected Format: [{ evaluation_id, criterion_id, score, comment }, ...]
+    const { scores } = req.body;
+
+    if (!scores || !Array.isArray(scores) || scores.length === 0) {
+      return res.status(400).json({ error: 'กรุณาส่งข้อมูลคะแนนประเมิน' });
+    }
+
+    const queryText = `
+      INSERT INTO evaluation_scores (evaluation_id, criterion_id, score, comment)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        score = VALUES(score),
+        comment = VALUES(comment)
+    `;
+
+    // บันทึกแบบวนลูปทีละรายการ หรือลูปประมวลผลทั้งหมด
+    for (const item of scores) {
+      await db.query(queryText, [
+        item.evaluation_id,
+        item.criterion_id,
+        item.score ?? null,
+        item.comment || null
+      ]);
+    }
+
+    res.json({ message: 'บันทึกคะแนนเรียบร้อยแล้ว' });
+  } catch (err) {
+    console.error('Error saving evaluation scores:', err.message);
+    res.status(500).json({ error: 'ไม่สามารถบันทึกคะแนนได้' });
   }
 });
 
