@@ -4,7 +4,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 function Login() {
   const Session = useOutletContext(); 
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const [loading, setLoading] = useState(true);
@@ -14,10 +14,10 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:5000/api/students/login', {
+      const res = await fetch('http://localhost:5000/api/login/assessor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({email, password}),
+        body: JSON.stringify({username, password}),
       });
       
       const contentType = res.headers.get('content-type');
@@ -34,21 +34,21 @@ function Login() {
       }
       
       // บันทึก Token และ ข้อมูลนักเรียนลงใน localStorage
-      localStorage.setItem('studentToken', data.token);
-      localStorage.setItem('studentInfo', JSON.stringify(data.student));
+      localStorage.setItem('assessorToken', data.token);
+      localStorage.setItem('assessorInfo', JSON.stringify(data.assessor));
       // console.log(data.student);
 
       console.log("Login สำเร็จ");
-      navigate('/Student'); 
+      navigate('/Assessor'); 
     }
     catch (err) {
-      console.error('Error fetching students:', err);
+      console.error('Error fetching assessors:', err);
     }
   }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'email') setEmail(value);
+    if (name === 'username') setUsername(value);
     if (name === 'password') setPassword(value);
   };
 
@@ -64,8 +64,8 @@ function Login() {
         <h1 className="text-3xl font-bold text-sky-400 mb-2">{Session.Assessor} Login</h1>
           <input
                 type="text"
-                name="email"
-                value={email}
+                name="username"
+                value={username}
                 onChange={handleChange}
                 placeholder="อีเมล"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"

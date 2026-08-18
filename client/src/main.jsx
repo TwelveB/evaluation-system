@@ -18,6 +18,12 @@ import LoginDashboard from './pages/Login/Dashboard.jsx'
 import StudentOutlet from './pages/Student/StudentOutlet.jsx'
 import Student from './pages/Student/Student.jsx'
 
+import AssessorOutlet from './pages/Assessor/AssessorOutlet.jsx'
+import Assessor from './pages/Assessor/Assessor.jsx'
+import StudentList from './pages/Assessor/StudentList.jsx'
+import StudentInfo from './pages/Assessor/StudentInfo.jsx'
+import EvaluatePage from './pages/Assessor/Evaluate.jsx'
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
       <BrowserRouter>
@@ -34,6 +40,13 @@ createRoot(document.getElementById('root')).render(
 
         <Route path="/Student" element={<StudentOutlet/>} >
           <Route index element={<Student/>} />
+        </Route>
+
+        <Route path="/Assessor" element={<AssessorOutlet/>} >
+          <Route index element={<Assessor/>} />
+          <Route path="StudentList" element={<StudentList/>} />
+          <Route path="StudentInfo/:id" element={<StudentInfo/>} />
+          <Route path="StudentInfo/Evaluate/:id" element={<EvaluatePage/>} />
         </Route>
 
         <Route path="/Administrator" element={<Administrator/>} >

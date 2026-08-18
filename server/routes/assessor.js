@@ -81,6 +81,22 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.get('/showEvaluationStudent/:id', async (req, res) => {
+  try {
+    const student_id = parseInt(req.params.id);
+    const result = await db.query(`SELECT s.student_id , s.first_name AS student_first_name, s.last_name AS student_last_name,
+       s.status, e.title AS evaluation_title, e.evaluation_id,
+      a.first_name AS assessor_first_name, a.last_name AS assessor_last_name FROM students s 
+      JOIN evaluations e ON s.student_id = e.student_id
+      LEFT JOIN assessors a ON a.assessor_id = e.assessor_id
+      WHERE ? = e.student_id`, [student_id]);
+    res.json(result);
+  } catch (err) {
+    console.error('Database Connection Error:', err.message);
+    res.status(500).json({ error: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้' });
+  }
+});
+
 router.get('/showEvaluations', async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM evaluations');
