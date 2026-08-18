@@ -15,7 +15,7 @@ function Login() {
     const Info = localStorage.getItem('studentInfo');
 
     if (!studentToken) {
-      navigate(-1);
+      navigate(-1, {replace: true});
       return
     }else {
       setStudentInfo(JSON.parse(Info));
@@ -26,16 +26,6 @@ function Login() {
     }
   }
 
-  const handleLogout = () => {
-      // 1. ลบ Token และข้อมูลนักเรียนทั้งหมดออกจาก localStorage
-      localStorage.removeItem('studentToken');
-      localStorage.removeItem('studentInfo');
-      // 2. ส่งนักเรียนกลับไปหน้า Login
-      navigate('/Login/Student');
-    };
-
-
-
   useEffect(() => {
     CheckToken();
   }, []);
@@ -43,23 +33,14 @@ function Login() {
 
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-6">
-      <div className="bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-700 text-center max-w-sm">
+      <div className="">
         <h1 className="text-3xl font-bold text-sky-400 mb-2">หน้า Student</h1>
         {loading ? (
           <p className="text-slate-400">กำลังโหลดข้อความ...</p>
         ) :
         (<p className="text-slate-400">สวัสดีครับคุณ {studentInfo.first_name} {studentInfo.last_name}</p>)
         }
-        <button
-        class="mt-5 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-        name="Administator"
-        onClick={handleLogout}
-        >
-          Log out
-        </button>
       </div>
-    </div>
   );
 }
 

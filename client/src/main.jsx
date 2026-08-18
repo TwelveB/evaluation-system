@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 
 import './index.css'
 import App from './App.jsx'
-import Administator from './pages/Admin/Administator.jsx'
+import Administrator from './pages/Admin/Administrator.jsx'
 import Controller from './pages/Admin/Controller.jsx'
 import AddStudent from './pages/Admin/AddStudent.jsx'
 import AddAssessor from './pages/Admin/AddAssessor.jsx'
@@ -15,6 +15,7 @@ import AdminLogin from './pages/Login/AdminLogin.jsx'
 import AssessorLogin from './pages/Login/AssessorLogin.jsx'
 import LoginDashboard from './pages/Login/Dashboard.jsx'
 
+import StudentOutlet from './pages/Student/StudentOutlet.jsx'
 import Student from './pages/Student/Student.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -31,9 +32,11 @@ createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path="/" element={<App/>} />
 
-        <Route path="/Student" element={<Student/>} />
+        <Route path="/Student" element={<StudentOutlet/>} >
+          <Route index element={<Student/>} />
+        </Route>
 
-        <Route path="/Administator" element={<Administator/>} >
+        <Route path="/Administrator" element={<Administrator/>} >
           <Route index element={<Controller/>} />
           <Route path="Dashboard" element={<Controller/>} />
           <Route path="AddAssessor" element={<AddAssessor/>} />

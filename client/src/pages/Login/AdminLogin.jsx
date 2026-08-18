@@ -38,7 +38,7 @@ function Login() {
       localStorage.setItem('adminInfo', JSON.stringify(data.admin));
 
       console.log("Login สำเร็จ");
-      navigate('/Administator/Dashboard'); 
+      navigate('/Administrator/Dashboard'); 
     }
     catch (err) {
       console.error('Error fetching admin:', err);

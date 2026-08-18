@@ -9,7 +9,7 @@ const router = express.Router();
 
 const SECRET_KEY = process.env.SECRET_KEY || "1";
 
-// Test Route ดึงข้อมูลเวลาจาก PostgreSQL
+// Test Route ดึงข้อมูลเวลาจาก Mariadb
 router.get('/', async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM assessors');
@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-//method post เพิ่มนักเรียน
+//method post เพิ่มผู้ประเมิน
 router.post('/', async (req, res) => {
   try {
     const { username, password, first_name, last_name, phone_number, department } = req.body;

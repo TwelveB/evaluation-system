@@ -19,7 +19,7 @@ router.post('/student', async (req, res) => {
     }
     //ค้นหาแอคเคาท์ที่มีอีเมลเดียวกันกับที่ส่งมา 1$ และหลัง , เอาไว้ป้องกัน SQL injection
     const result = await db.query(
-      'SELECT * FROM studenttb WHERE student_code = ?',
+      'SELECT * FROM students WHERE student_code = ?',
       [student_code]
     );
     

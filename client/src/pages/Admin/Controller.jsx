@@ -25,21 +25,15 @@ function Administator() {
   }
 
   const GoToAddStudent = () => {
-    navigate('/Administator/AddStudent');
+    navigate('/Administrator/AddStudent');
   };
   const GoToAddAssessor = () => {
-    navigate('/Administator/AddAssessor');
+    navigate('/Administrator/AddAssessor');
   };
-  const handleLogout = () => {
-      // 1. ลบ Token และข้อมูลนักเรียนทั้งหมดออกจาก localStorage
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminInfo');
-      // 2. ส่งนักเรียนกลับไปหน้า Login
-      navigate('/Login/Admin');
-    };
 
   useEffect(() => { //ทำงานเมื่อเริ่มหน้าเว็บ
     fetchStudents();
+    
   }, []);
 
   return (
@@ -58,10 +52,6 @@ function Administator() {
         onClick={GoBack}>
           Back
         </button> <br></br>
-        <button class="mt-5 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-        onClick={handleLogout}>
-          Logout
-        </button>
         {/* ตารางแสดงผลรายชื่อนักเรียน */}
         <div>
           <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">

@@ -4,7 +4,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 function Login() {
   const Session = useOutletContext(); 
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [student_code, setStudentCode] = useState('');
   const [password, setPassword] = useState('');
 
   const [loading, setLoading] = useState(true);
@@ -13,11 +13,14 @@ function Login() {
   const LoginHandle = async (e) => {
     e.preventDefault();
 
+    // console.log(JSON.stringify({student_code, password}));
+
     try {
       const res = await fetch('http://localhost:5000/api/login/student/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({email, password}),
+        body: JSON.stringify({student_code, password}),
+        // ตัวอย่างoutput {"student_code":"EMP-2024-001","password":"1"} ในฝั่ง backend ชื่อต้องเหมือนกน
       });
       
       const contentType = res.headers.get('content-type');
@@ -48,7 +51,7 @@ function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'email') setEmail(value);
+    if (name === 'student_code') setStudentCode(value);
     if (name === 'password') setPassword(value);
   };
 
@@ -64,8 +67,8 @@ function Login() {
         <h1 className="text-3xl font-bold text-sky-400 mb-2">{Session.Student} Login</h1>
           <input
                 type="text"
-                name="email"
-                value={email}
+                name="student_code"
+                value={student_code}
                 onChange={handleChange}
                 placeholder="อีเมล"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500"

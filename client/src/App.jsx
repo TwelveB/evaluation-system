@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './App.css';
 
 function App() {
   const navigate = useNavigate();
@@ -175,21 +176,22 @@ function App() {
                   {students.map((student, idx) => (
                     <tr key={student.student_id || idx} className="hover:bg-slate-700/30 transition-colors">
                       <td className="py-3 px-4 text-slate-500">{idx + 1}</td>
-                      <td className="py-3 px-4 font-medium text-white">{student.first_name|| 'N/A'}</td>
-                      <td className="py-3 px-4 font-medium text-white">{student.first_name|| 'N/A'}</td>
+                      <td className="py-3 px-4 font-medium text-white">{student.first_name || 'N/A'}</td>
+                      <td className="py-3 px-4 font-medium text-white">{student.role || 'Student'}</td>
                       <td className="py-3 px-4">
-                        {student.status === 1 ? (                        
-                        <span class="active">
-                          Active
-                        </span>) : (
-                        <span class="inactive">
-                          Inactive
-                        </span>
+                        {student.status === 1 ? (
+                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
+                            Active
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-300">
+                            Inactive
+                          </span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-right">
                         <button 
-                          onClick={() => handleRoleNavigate('Assessor')}
+                          onClick={() => navigate('Assessor')}
                           className="text-xs text-blue-400 hover:text-blue-300 font-medium"
                         >
                           Evaluate →
