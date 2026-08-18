@@ -81,4 +81,40 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.get('/showEvaluations', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM evaluations');
+    res.json(result);
+  } catch (err) {
+    console.error('Database Connection Error:', err.message);
+    res.status(500).json({ error: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้' });
+  }
+});
+
+router.get('/showCriteria', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM criteria');
+    res.json(result);
+  } catch (err) {
+    console.error('Database Connection Error:', err.message);
+    res.status(500).json({ error: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้' });
+  }
+});
+
+router.get('/showEvaluations:id=:id', async (req, res) => {
+  try {
+    const student_id = parseInt(req.params.id);
+    const result = await db.query('SELECT * FROM evaluations WHERE student_id = ?', [student_id]);
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'ไม่พบข้อมูลการประเมินสำหรับ student_id ที่ระบุ' });
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('Database Connection Error:', err.message);
+    res.status(500).json({ error: 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้' });
+  }
+});
+
 module.exports = router;
