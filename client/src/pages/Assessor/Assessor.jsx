@@ -40,9 +40,17 @@ function Assessor() {
         ) :
         (<p className="text-slate-400">สวัสดีครับคุณ {assessorInfo.first_name} {assessorInfo.last_name}</p>)
         }
+           <button
+            onClick={() => navigate(`/Assessor/StudentList/`)}
+            className="px-3.5 py-1.5 text-xs font-bold text-sky-400 hover:text-white bg-sky-500/10 hover:bg-sky-500 rounded-lg border border-sky-500/20 transition-all"
+            > ดูสถานะนักเรียน   →
+                      </button>
       </div>
+      
   );
 }
+
+
 
 export default Assessor; 
 

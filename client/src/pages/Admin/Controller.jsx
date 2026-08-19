@@ -23,17 +23,23 @@ function Administator() {
   const GoBack = () => {
     navigate(-1);
   }
-
+  
   const GoToAddStudent = () => {
     navigate('/Administrator/AddStudent');
   };
   const GoToAddAssessor = () => {
     navigate('/Administrator/AddAssessor');
   };
+  const GoToAddCriteria = () => {
+    navigate('/Administrator/AddCriteria');
+  };
+
+  const GoToAddEvaluationRound = () => {
+    navigate('/Administrator/AddEvaluationRound');
+  };
 
   useEffect(() => { //ทำงานเมื่อเริ่มหน้าเว็บ
     fetchStudents();
-    
   }, []);
 
   return (
@@ -48,10 +54,17 @@ function Administator() {
         onClick={GoToAddAssessor}>
           Add Assessor
         </button>
-        <button class="mt-5 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+
+            <button className="mt-5 mr-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded" onClick={GoToAddCriteria}>
+              + เพิ่มตัวชี้วัด
+            </button>
+            <button className="mt-5 mr-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded" onClick={GoToAddEvaluationRound}>
+              + เพิ่มรอบการประเมิน
+            </button>
+        {/* <button class="mt-5 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
         onClick={GoBack}>
           Back
-        </button> <br></br>
+        </button> <br></br> */}
         {/* ตารางแสดงผลรายชื่อนักเรียน */}
         <div>
           <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">

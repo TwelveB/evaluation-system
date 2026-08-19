@@ -1,15 +1,16 @@
 services:
-  # 1. Database Service (MariaDB)
-  mariadb:
-    image: mariadb:lts
-    container_name: mariadb_db
+  # 1. Database Service (PostgreSQL)
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres_db
     environment:
-      MARIADB_ROOT_PASSWORD: "1"
-      MARIADB_DATABASE: evaluation
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1"
+      POSTGRES_DB: evaluation
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - pgdata:/var/lib/postgresql/data
 
   # 2. Backend Service (Express)
   server:
@@ -19,15 +20,15 @@ services:
       - "5000:5000"
     environment:
       PORT: 5000
-      DB_USER: root
+      DB_USER: postgres
       DB_PASSWORD: "1"
-      DB_HOST: mariadb
-      DB_PORT: 3306
+      DB_HOST: postgres
+      DB_PORT: 5432
       DB_NAME: evaluation
     depends_on:
-      - mariadb
+      - postgres
 
-  # 3. Frontend Service (React / Vue + Vite)
+  # 3. Frontend Service (react + Vite)
   client:
     build: ./client
     container_name: react_client
@@ -35,6 +36,7 @@ services:
       - "5173:5173"
     depends_on:
       - server
+      #  จุดสำคัญ: ตั้งค่า Watch สำหรับ React
     develop:
       watch:
         - action: sync
@@ -44,7 +46,6 @@ services:
             - node_modules/
         - action: rebuild
           path: ./client/package.json
-
   # 4. Database Management UI (Adminer)
   adminer:
     image: adminer:latest
@@ -52,7 +53,6 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - mariadb
-
+      - postgres
 volumes:
-  mariadb_data:
+  pgdata:

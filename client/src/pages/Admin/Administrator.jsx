@@ -32,8 +32,6 @@ function Administator() {
       window.location.replace('/Login/Admin');
     };
 
-
-
   useEffect(() => {
     CheckToken();
     const handlePageShow = (event) => {

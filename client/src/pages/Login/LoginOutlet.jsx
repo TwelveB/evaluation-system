@@ -8,7 +8,19 @@ function Login() {
   const ReturnLogin = () => {
     navigate("/");
   }
+  const CheckToken = () => {
+    const assessorToken = localStorage.getItem("assessorToken");
+    const adminToken = localStorage.getItem("adminToken");
+    const studentToken = localStorage.getItem("studentToken");
 
+    if (assessorToken || adminToken || studentToken) {
+      window.location.replace("/");
+      return
+    }
+  }
+    useEffect(() => {
+    CheckToken();
+  }, []);
   return (
     <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-6">
       <div className="bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-700 text-center max-w-sm">

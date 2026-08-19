@@ -8,6 +8,8 @@ import Administrator from './pages/Admin/Administrator.jsx'
 import Controller from './pages/Admin/Controller.jsx'
 import AddStudent from './pages/Admin/AddStudent.jsx'
 import AddAssessor from './pages/Admin/AddAssessor.jsx'
+import AddEvaluationRound from './pages/Admin/AddEvaluationRound.jsx'
+import AddCriteria from './pages/Admin/AddCriteria.jsx'
 
 import LoginOutlet from './pages/Login/LoginOutlet.jsx'
 import StudentLogin from './pages/Login/StudentLogin.jsx'
@@ -51,6 +53,8 @@ createRoot(document.getElementById('root')).render(
 
         <Route path="/Administrator" element={<Administrator/>} >
           <Route index element={<Controller/>} />
+          <Route path="AddEvaluationRound" element={<AddEvaluationRound/>} />
+          <Route path="AddCriteria" element={<AddCriteria/>} />
           <Route path="Dashboard" element={<Controller/>} />
           <Route path="AddAssessor" element={<AddAssessor/>} />
           <Route path="AddStudent" element={<AddStudent/>} />
