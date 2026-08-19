@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-function EvaluationStudentList() {
+function StudentInfo() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState([]);
@@ -110,4 +110,4 @@ function EvaluationStudentList() {
   );
 }
 
-export default EvaluationStudentList;
+export default StudentInfo;
