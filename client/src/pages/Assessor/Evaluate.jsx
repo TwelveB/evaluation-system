@@ -1,15 +1,13 @@
-// ==========================================
-// 1. IMPORT LIBRARIES & HOOKS
-// ==========================================
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable'; // Import เป็นฟังก์ชันตรงๆ
+import html2canvas from 'html2canvas-pro';
 
 function Evaluate() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+  const printRef = useRef(null);
+
   const [criteria, setCriteria] = useState([]);
   const [scores, setScores] = useState({});
   const [comments, setComments] = useState({});
@@ -61,65 +59,40 @@ function Evaluate() {
     setComments((prev) => ({ ...prev, [criterionId]: val }));
   };
 
-  // ==========================================
-  // ฟังก์ชันสร้างและดาวน์โหลดไฟล์ PDF
-  // ==========================================
-const exportToPDF = () => {
-    const doc = new jsPDF();
-
-    // หัวข้อเอกสาร
-    doc.setFontSize(18);
-    doc.text('Evaluation Result Report', 14, 20);
-    
-    doc.setFontSize(10);
-    doc.text(`Evaluation Round ID: ${id}`, 14, 28);
-    doc.text(`Date Generated: ${new Date().toLocaleDateString()}`, 14, 34);
-
-    // จัดเตรียมข้อมูลสำหรับตาราง PDF
-    const tableRows = criteria.map((item, idx) => {
-      const currentScore = scores[item.criterion_id];
-      const displayScore = currentScore !== undefined && currentScore !== null 
-        ? currentScore 
-        : 'N/A';
-      
-      return [
-        idx + 1,
-        item.title || '-',
-        item.weight || 1,
-        displayScore,
-        comments[item.criterion_id] || '-'
-      ];
-    });
-
-    // เรียกใช้ autoTable(doc, options) แทน doc.autoTable(...)
-    autoTable(doc, {
-      startY: 40,
-      head: [['#', 'Criterion', 'Weight', 'Score', 'Comment']],
-      body: tableRows,
-      theme: 'grid',
-      headStyles: { fillColor: [14, 165, 233] },
-      columnStyles: {
-        0: { cellWidth: 10 },
-        1: { cellWidth: 60 },
-        2: { cellWidth: 20 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 70 },
-      },
-    });
-
-    // คำนวณสรุปผลคะแนนรวม
-    const totalScore = criteria.reduce((sum, item) => {
+  // คำนวณคะแนนรวมทั้งหมด
+  const calculateTotalScore = () => {
+    return criteria.reduce((sum, item) => {
       const s = parseFloat(scores[item.criterion_id]) || 0;
       return sum + s;
     }, 0);
+  };
 
-    // อ่านค่าตำแหน่ง Y สุดท้ายของตาราง (ถ้าใช้ autoTable ตรงๆ ให้ดึงจาก doc.lastAutoTable)
-    const finalY = (doc.lastAutoTable?.finalY || 40) + 10;
-    doc.setFontSize(12);
-    doc.text(`Total Score: ${totalScore.toFixed(2)}`, 14, finalY);
+  // ==========================================
+  // ฟังก์ชันดาวน์โหลดตารางสรุปเป็น PDF
+  // ==========================================
+  const exportToPDF = async () => {
+    const element = printRef.current;
+    if (!element) return;
 
-    // บันทึกไฟล์ PDF
-    doc.save(`Evaluation_Report_${id}.pdf`);
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff', // สั่งพิมพ์เป็นพื้นหลังสีขาว กระดาษจริง
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`ตารางสรุปผลการประเมิน_${id}.pdf`);
+    } catch (err) {
+      console.error('Error exporting PDF:', err);
+      alert('เกิดข้อผิดพลาดในการสร้าง PDF');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -160,17 +133,17 @@ const exportToPDF = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-sky-400">แบบประเมินผลการทำงาน</h1>
         
-        {/* ปุ่มสร้างและส่งออกไฟล์ PDF */}
         <button
           type="button"
           onClick={exportToPDF}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg flex items-center gap-2 shadow transition"
+          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg flex items-center gap-2 shadow"
         >
-          📄 ส่งออก PDF
+          📄 ออกรายงานสรุป (PDF)
         </button>
       </div>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
+
+      {/* ฟอร์มกรอกคะแนนปกติสำหรับกรรมการ */}
+      <form onSubmit={handleSubmit} className="space-y-6 mb-12">
         {criteria.map((item, idx) => (
           <div key={item.criterion_id} className="p-4 bg-slate-800 border border-slate-700 rounded-xl">
             <div className="flex justify-between items-start mb-2">
@@ -262,6 +235,68 @@ const exportToPDF = () => {
           </button>
         </div>
       </form>
+
+      {/* ========================================== */}
+      {/* องค์ประกอบตารางสรุป (สำหรับแปลงออกเป็น PDF) */}
+      {/* ========================================== */}
+      <div className="overflow-hidden h-0 w-0"> {/* ซ่อนในหน้าจอปกติ ป้องกันรบกวน UI */}
+        <div 
+          ref={printRef} 
+          style={{ width: '800px', backgroundColor: '#ffffff', color: '#000000', padding: '32px', fontFamily: 'sans-serif' }}
+        >
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 8px 0' }}>สรุปผลการประเมิน</h2>
+            <p style={{ fontSize: '14px', color: '#4b5563', margin: 0 }}>
+              รหัสการประเมิน: {id} | วันที่: {new Date().toLocaleDateString('th-TH')}
+            </p>
+          </div>
+
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '16px' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f3f4f6', borderBottom: '2px solid #d1d5db' }}>
+                <th style={{ padding: '10px', textAlign: 'center', border: '1px solid #d1d5db', width: '8%' }}>#</th>
+                <th style={{ padding: '10px', textAlign: 'left', border: '1px solid #d1d5db', width: '42%' }}>ตัวชี้วัด</th>
+                <th style={{ padding: '10px', textAlign: 'center', border: '1px solid #d1d5db', width: '12%' }}>น้ำหนัก</th>
+                <th style={{ padding: '10px', textAlign: 'center', border: '1px solid #d1d5db', width: '12%' }}>คะแนน</th>
+                <th style={{ padding: '10px', textAlign: 'left', border: '1px solid #d1d5db', width: '26%' }}>ข้อเสนอแนะ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {criteria.map((item, idx) => (
+                <tr key={item.criterion_id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                  <td style={{ padding: '10px', textAlign: 'center', border: '1px solid #d1d5db' }}>{idx + 1}</td>
+                  <td style={{ padding: '10px', border: '1px solid #d1d5db' }}>{item.title}</td>
+                  <td style={{ padding: '10px', textAlign: 'center', border: '1px solid #d1d5db' }}>{item.weight}</td>
+                  <td style={{ padding: '10px', textAlign: 'center', border: '1px solid #d1d5db', fontWeight: 'bold' }}>
+                    {scores[item.criterion_id] !== undefined ? scores[item.criterion_id] : '-'}
+                  </td>
+                  <td style={{ padding: '10px', border: '1px solid #d1d5db', fontSize: '12px' }}>
+                    {comments[item.criterion_id] || '-'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr style={{ backgroundColor: '#f9fafb', fontWeight: 'bold' }}>
+                <td colSpan={3} style={{ padding: '12px', textAlign: 'right', border: '1px solid #d1d5db' }}>
+                  คะแนนรวมทั้งหมด:
+                </td>
+                <td style={{ padding: '12px', textAlign: 'center', border: '1px solid #d1d5db', color: '#2563eb', fontSize: '16px' }}>
+                  {calculateTotalScore()}
+                </td>
+                <td style={{ border: '1px solid #d1d5db' }}></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ textAlign: 'center', width: '200px' }}>
+              <div style={{ borderBottom: '1px solid #000', marginBottom: '8px', height: '40px' }}></div>
+              <p style={{ fontSize: '14px', margin: 0 }}>ลงชื่อผู้ประเมิน</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
