@@ -215,6 +215,7 @@ function Evaluate() {
                 /* ตัวเลือกแบบ Scale ระดับคะแนน (เช่น สเกล 1-4 หรือ 1-5) */
                 <div className="flex gap-3">
                   {/* สร้าง Array ตัวเลขตั้งแต่ min_score ถึง max_score แบบอัตโนมัติ */}
+                  {/* โดยการให้อาเรย์วนลปูจาก min_score ถึง max_score และสร้าง Radio Button สำหรับแต่ละตัวเลขตามคีย์ที่่อาเรย์สร้างไว้ด้วย (_, i) => item.min_score + i */}
                   {Array.from(
                     { length: item.max_score - item.min_score + 1 },
                     (_, i) => item.min_score + i

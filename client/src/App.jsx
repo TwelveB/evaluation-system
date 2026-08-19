@@ -139,8 +139,8 @@ function App() {
         <div className="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-bold text-white">Student Overview</h2>
-              <p className="text-xs text-slate-400">Live data loaded from server</p>
+              <h2 className="text-lg font-bold text-white">รายชื่อนักเรียน</h2>
+              <p className="text-xs text-slate-400">โหลดข้อมูลจากเซิร์ฟเวอร์</p>
             </div>
             <span className="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-lg">
               Total: {students.length}
@@ -169,7 +169,7 @@ function App() {
                     <th className="py-3 px-4">Name</th>
                     <th className="py-3 px-4">role</th>
                     <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Action</th>
+                    {/* <th className="py-3 px-4 text-right">Action</th> */}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700/50 text-sm text-slate-300">
@@ -189,14 +189,14 @@ function App() {
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      {/* <td className="py-3 px-4 text-right">
                         <button 
                           onClick={() => navigate('Assessor')}
                           className="text-xs text-blue-400 hover:text-blue-300 font-medium"
                         >
                           Evaluate →
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -209,7 +209,7 @@ function App() {
 
       {/* Footer */}
       <footer className="border-t border-slate-800 py-4 text-center text-xs text-slate-500">
-        EvaluateHub &copy; Secure evaluation platform for educational institutions
+        ระบบประเมินผลนักเรียน 
       </footer>
 
     </div>
