@@ -11,6 +11,8 @@ function Evaluate() {
   const [criteria, setCriteria] = useState([]);
   const [scores, setScores] = useState({});
   const [comments, setComments] = useState({});
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [existingDocPath, setExistingDocPath] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -21,12 +23,15 @@ function Evaluate() {
       if (!res.ok) throw new Error('ไม่สามารถดึงข้อมูลได้');
       
       const data = await res.json();
-      setCriteria(data);
+      
+      // ปรับตามโครงสร้างResponse ใหม่
+      setCriteria(data.criteria || []);
+      setExistingDocPath(data.document_path || null);
 
       const initialScores = {};
       const initialComments = {};
       
-      data.forEach((item) => {
+      (data.criteria || []).forEach((item) => {
         if (item.score !== null && item.score !== undefined) {
           initialScores[item.criterion_id] = item.score;
         }
@@ -59,7 +64,16 @@ function Evaluate() {
     setComments((prev) => ({ ...prev, [criterionId]: val }));
   };
 
-  // คำนวณคะแนนรวมทั้งหมด
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      setSelectedFile(file);
+    } else {
+      alert('กรุณาเลือกเฉพาะไฟล์ PDF เท่านั้น');
+      e.target.value = null;
+    }
+  };
+
   const calculateTotalScore = () => {
     return criteria.reduce((sum, item) => {
       const s = parseFloat(scores[item.criterion_id]) || 0;
@@ -67,9 +81,6 @@ function Evaluate() {
     }, 0);
   };
 
-  // ==========================================
-  // ฟังก์ชันดาวน์โหลดตารางสรุปเป็น PDF
-  // ==========================================
   const exportToPDF = async () => {
     const element = printRef.current;
     if (!element) return;
@@ -78,7 +89,7 @@ function Evaluate() {
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff', // สั่งพิมพ์เป็นพื้นหลังสีขาว กระดาษจริง
+        backgroundColor: '#ffffff',
       });
 
       const imgData = canvas.toDataURL('image/png');
@@ -99,23 +110,30 @@ function Evaluate() {
     e.preventDefault();
     setSaving(true);
 
-    const payload = criteria.map((c) => ({
-      evaluation_id: parseInt(id),
+    const scoresPayload = criteria.map((c) => ({
       criterion_id: c.criterion_id,
       score: scores[c.criterion_id] !== undefined ? parseFloat(scores[c.criterion_id]) : null,
       comment: comments[c.criterion_id] || ''
     }));
 
+    // ส่งข้อมูลในรูปแบบ FormData
+    const formData = new FormData();
+    formData.append('evaluation_id', id);
+    formData.append('scores', JSON.stringify(scoresPayload));
+    
+    if (selectedFile) {
+      formData.append('document', selectedFile);
+    }
+
     try {
       const res = await fetch('http://localhost:5000/api/assessor/save-scores', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scores: payload })
+        body: formData // ส่งเป็น FormData
       });
 
       if (!res.ok) throw new Error('บันทึกไม่สำเร็จ');
 
-      alert('บันทึกผลการประเมินเรียบร้อยแล้ว');
+      alert('บันทึกผลการประเมินและแนบไฟล์เรียบร้อยแล้ว');
       navigate('/Assessor/StudentList');
     } catch (err) {
       console.error(err);
@@ -142,8 +160,38 @@ function Evaluate() {
         </button>
       </div>
 
-      {/* ฟอร์มกรอกคะแนนปกติสำหรับกรรมการ */}
       <form onSubmit={handleSubmit} className="space-y-6 mb-12">
+        {/* ========================================== */}
+        {/* ส่วนอัปโหลด / แสดงไฟล์เอกสารหลักฐาน */}
+        {/* ========================================== */}
+        <div className="p-4 bg-slate-800 border border-slate-700 rounded-xl space-y-3">
+          <label className="block text-sm font-semibold text-slate-200">
+            📎 เอกสารหลักฐานการประเมิน (PDF 1 ไฟล์ต่อการประเมิน):
+          </label>
+          
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={handleFileChange}
+            className="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-500 cursor-pointer"
+          />
+
+          {existingDocPath && (
+            <div className="pt-2 text-xs text-slate-300 flex items-center gap-2">
+              <span>เอกสารหลักฐานปัจจุบัน:</span>
+              <a
+                href={`http://localhost:5000${existingDocPath}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sky-400 hover:underline flex items-center gap-1 font-medium"
+              >
+                📥 เปิดดูไฟล์หลักฐานเดิม
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* ส่วนรายการเกณฑ์การประเมิน */}
         {criteria.map((item, idx) => (
           <div key={item.criterion_id} className="p-4 bg-slate-800 border border-slate-700 rounded-xl">
             <div className="flex justify-between items-start mb-2">
@@ -236,10 +284,8 @@ function Evaluate() {
         </div>
       </form>
 
-      {/* ========================================== */}
-      {/* องค์ประกอบตารางสรุป (สำหรับแปลงออกเป็น PDF) */}
-      {/* ========================================== */}
-      <div className="overflow-hidden h-0 w-0"> {/* ซ่อนในหน้าจอปกติ ป้องกันรบกวน UI */}
+      {/* ตารางสรุป PDF เบื้องหลัง */}
+      <div className="overflow-hidden h-0 w-0">
         <div 
           ref={printRef} 
           style={{ width: '800px', backgroundColor: '#ffffff', color: '#000000', padding: '32px', fontFamily: 'sans-serif' }}

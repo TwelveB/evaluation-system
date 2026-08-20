@@ -1,13 +1,16 @@
+const SECRET_KEY = process.env.SECRET_KEY || "1";
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const db = require('../db');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 require('dotenv').config();
 
 const router = express.Router();
 
-const SECRET_KEY = process.env.SECRET_KEY || "1";
 
 // Test Route ดึงข้อมูลเวลาจาก Mariadb
 router.get('/', async (req, res) => {
@@ -117,6 +120,8 @@ router.get('/showEvaluationStudent/:id', async (req, res) => {
 //   }
 // });
 
+
+
 router.get('/showEvaluations:id=:id', async (req, res) => {
   try {
     const student_id = parseInt(req.params.id);
@@ -133,58 +138,96 @@ router.get('/showEvaluations:id=:id', async (req, res) => {
   }
 });
 
+// ==========================================
+// การตั้งค่า MULTER สำหรับเก็บไฟล์ PDF
+// ==========================================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../uploads/documents');
+    // สร้างโฟลเดอร์อัตโนมัติหากยังไม่มีอยู่
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // กำหนดชื่อไฟล์เป็น document_evaluation_{id}_{timestamp}.pdf (1 ไฟล์ต่อรอบ)
+    const evaluationId = req.params.evaluation_id || req.body.evaluation_id;
+    const uniqueSuffix = Date.now();
+    cb(null, `doc_eval_${evaluationId}_${uniqueSuffix}.pdf`);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('รองรับเฉพาะไฟล์ PDF เท่านั้น'), false);
+    }
+  },
+  limits: { fileSize: 10 * 1024 * 1024 } // จำกัดขนาดไม่เกิน 10MB
+});
+
 // ดึงข้อมูลเกณฑ์การประเมิน (criteria) พร้อมคะแนนประเมิน (evaluation_scores) ของ evaluation_id นั้นๆ
+// ดึงข้อมูลเกณฑ์พร้อม Path ไฟล์หลักฐานเดิม
 router.get('/evaluation-criteria/:evaluation_id', async (req, res) => {
   try {
     const evaluation_id = parseInt(req.params.evaluation_id);
-
-    // เช็คว่าส่งค่า ID มาเป็นตัวเลขถูกต้องหรือไม่
     if (isNaN(evaluation_id)) {
       return res.status(400).json({ error: 'รหัส evaluation_id ไม่ถูกต้อง' });
     }
 
+    // ดึง document_path จากตาราง evaluations
+    const evalResult = await db.query(
+      'SELECT document_path FROM evaluations WHERE evaluation_id = ?', 
+      [evaluation_id]
+    );
+
     const queryText = `
       SELECT 
-        c.criterion_id,
-        c.section_id,
-        c.title,
-        c.description,
-        c.weight,
-        c.evaluation_type,
-        c.requires_evidence,
-        c.min_score,
-        c.max_score,
-        es.score_id,
-        es.score,
-        es.comment
+        c.criterion_id, c.section_id, c.title, c.description,
+        c.weight, c.evaluation_type, c.requires_evidence,
+        c.min_score, c.max_score, es.score_id, es.score, es.comment
       FROM criteria c
       LEFT JOIN evaluation_scores es 
-        ON c.criterion_id = es.criterion_id 
-        AND es.evaluation_id = ?
+        ON c.criterion_id = es.criterion_id AND es.evaluation_id = ?
       ORDER BY c.section_id ASC, c.criterion_id ASC
     `;
 
-    const result = await db.query(queryText, [evaluation_id]);
+    const criteriaResult = await db.query(queryText, [evaluation_id]);
     
-    // ส่งผลลัพธ์กลับไป (หากใช้ mariadb driver บางตัว ตัวแปรอาจจะซ้อนอยู่ใน result หรือ rows)
-    res.json(result);
+    res.json({
+      criteria: criteriaResult,
+      document_path: evalResult[0]?.document_path || null
+    });
   } catch (err) {
-    // 💡 ดูข้อความ Error ที่แท้จริงตรงนี้ใน Terminal
     console.error('Database Query Error:', err); 
-    res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลเกณฑ์การประเมินได้', details: err.message });
+    res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลได้', details: err.message });
   }
 });
 
-// บันทึกคะแนนประเมิน (บันทึกใหม่ หรือ อัปเดตหากมีคีย์ซ้ำ)
-router.post('/save-scores', async (req, res) => {
+// บันทึกคะแนน และ/หรือ อัปโหลดไฟล์เอกสารหลักฐาน
+router.post('/save-scores', upload.single('document'), async (req, res) => {
   try {
-    // scores Expected Format: [{ evaluation_id, criterion_id, score, comment }, ...]
-    const { scores } = req.body;
+    const evaluation_id = parseInt(req.body.evaluation_id);
+    const scores = JSON.parse(req.body.scores || '[]');
 
-    if (!scores || !Array.isArray(scores) || scores.length === 0) {
-      return res.status(400).json({ error: 'กรุณาส่งข้อมูลคะแนนประเมิน' });
+    if (!evaluation_id) {
+      return res.status(400).json({ error: 'ไม่พบรหัสการประเมิน' });
     }
 
+    // 1. อัปเดต Path ไฟล์ในตาราง evaluations (ถ้ามีการแนบไฟล์ใหม่เข้ามา)
+    if (req.file) {
+      const documentPath = `/uploads/documents/${req.file.filename}`;
+      await db.query(
+        'UPDATE evaluations SET document_path = ? WHERE evaluation_id = ?',
+        [documentPath, evaluation_id]
+      );
+    }
+
+    // 2. บันทึกคะแนนลง evaluation_scores
     const queryText = `
       INSERT INTO evaluation_scores (evaluation_id, criterion_id, score, comment)
       VALUES (?, ?, ?, ?)
@@ -193,20 +236,19 @@ router.post('/save-scores', async (req, res) => {
         comment = VALUES(comment)
     `;
 
-    // บันทึกแบบวนลูปทีละรายการ หรือลูปประมวลผลทั้งหมด
     for (const item of scores) {
       await db.query(queryText, [
-        item.evaluation_id,
+        evaluation_id,
         item.criterion_id,
         item.score ?? null,
         item.comment || null
       ]);
     }
 
-    res.json({ message: 'บันทึกคะแนนเรียบร้อยแล้ว' });
+    res.json({ message: 'บันทึกข้อมูลเรียบร้อยแล้ว' });
   } catch (err) {
-    console.error('Error saving evaluation scores:', err.message);
-    res.status(500).json({ error: 'ไม่สามารถบันทึกคะแนนได้' });
+    console.error('Error saving evaluation:', err.message);
+    res.status(500).json({ error: 'ไม่สามารถบันทึกข้อมูลได้' });
   }
 });
 

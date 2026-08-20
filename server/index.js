@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const path = require('path');
 const db = require('./db');
 
 require('dotenv').config();
@@ -11,6 +12,8 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const studentRoutes = require('./routes/student.js');
 const adminRoutes = require('./routes/admin.js');
