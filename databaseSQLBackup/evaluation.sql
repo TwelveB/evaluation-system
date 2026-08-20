@@ -89,13 +89,16 @@ CREATE TABLE IF NOT EXISTS `evaluation_scores` (
   KEY `criterion_id` (`criterion_id`),
   CONSTRAINT `1` FOREIGN KEY (`evaluation_id`) REFERENCES `evaluations` (`evaluation_id`) ON DELETE CASCADE,
   CONSTRAINT `2` FOREIGN KEY (`criterion_id`) REFERENCES `criteria` (`criterion_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางบันทึกผลคะแนนและคอมเมนต์รายตัวชี้วัด';
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางบันทึกผลคะแนนและคอมเมนต์รายตัวชี้วัด';
 
--- Dumping data for table evaluation.evaluation_scores: ~3 rows (approximately)
+-- Dumping data for table evaluation.evaluation_scores: ~6 rows (approximately)
 INSERT INTO `evaluation_scores` (`score_id`, `evaluation_id`, `criterion_id`, `score`, `comment`) VALUES
 	(1, 2, 1, 4.00, 'ส่งงานตรงเวลาเสมอและโค้ดมีคุณภาพ'),
 	(2, 2, 2, 1.00, 'มีเอกสาร ER-Diagram ชัดเจน'),
-	(3, 2, 3, 3.00, 'สื่อสารได้ดี แต่อยากให้เสนอความคิดเห็นมากขึ้นในที่ประชุม');
+	(3, 2, 3, 3.00, 'สื่อสารได้ดี แต่อยากให้เสนอความคิดเห็นมากขึ้นในที่ประชุม'),
+	(4, 1, 1, 4.00, NULL),
+	(5, 1, 2, 1.00, NULL),
+	(6, 1, 3, 1.00, NULL);
 
 -- Dumping structure for table evaluation.evaluations
 CREATE TABLE IF NOT EXISTS `evaluations` (
@@ -108,6 +111,7 @@ CREATE TABLE IF NOT EXISTS `evaluations` (
   `end_date` datetime NOT NULL COMMENT 'เวลาปิดระบบประเมิน',
   `assigned_by` int(11) DEFAULT NULL COMMENT 'ผู้มอบหมายงาน (FK เชื่อมไป admins)',
   `status` enum('PENDING','IN_PROGRESS','COMPLETED') DEFAULT 'PENDING' COMMENT 'สถานะงาน (PENDING=รอทำ, IN_PROGRESS=กำลังทำ, COMPLETED=ส่งผลแล้ว)',
+  `document_path` varchar(255) DEFAULT NULL,
   `assessor_signature_path` varchar(255) DEFAULT NULL COMMENT 'ที่เก็บไฟล์ภาพลายเซ็นกรรมการ',
   `assigned_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'วันเวลาที่มอบหมาย',
   `completed_at` timestamp NULL DEFAULT NULL COMMENT 'วันเวลาที่กรรมการส่งผลประเมิน',
@@ -118,12 +122,13 @@ CREATE TABLE IF NOT EXISTS `evaluations` (
   CONSTRAINT `1` FOREIGN KEY (`assessor_id`) REFERENCES `assessors` (`assessor_id`) ON DELETE CASCADE,
   CONSTRAINT `2` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE,
   CONSTRAINT `3` FOREIGN KEY (`assigned_by`) REFERENCES `admins` (`admin_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางศูนย์กลางมอบหมายงานและกำหนดช่วงเวลาประเมิน';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางศูนย์กลางมอบหมายงานและกำหนดช่วงเวลาประเมิน';
 
--- Dumping data for table evaluation.evaluations: ~2 rows (approximately)
-INSERT INTO `evaluations` (`evaluation_id`, `title`, `assessor_id`, `student_id`, `committee_role`, `start_date`, `end_date`, `assigned_by`, `status`, `assessor_signature_path`, `assigned_at`, `completed_at`) VALUES
-	(1, 'การประเมินผลงานประจำปี 2026 - มานะ (ประธาน)', 1, 1, 'PRESIDENT', '2026-08-01 00:00:00', '2026-08-31 23:59:59', 1, 'IN_PROGRESS', NULL, '2026-08-17 06:45:33', NULL),
-	(2, 'การประเมินผลงานประจำปี 2026 - มานะ (กรรมการ)', 2, 1, 'MEMBER', '2026-08-01 00:00:00', '2026-08-31 23:59:59', 1, 'COMPLETED', NULL, '2026-08-17 06:45:33', NULL);
+-- Dumping data for table evaluation.evaluations: ~3 rows (approximately)
+INSERT INTO `evaluations` (`evaluation_id`, `title`, `assessor_id`, `student_id`, `committee_role`, `start_date`, `end_date`, `assigned_by`, `status`, `document_path`, `assessor_signature_path`, `assigned_at`, `completed_at`) VALUES
+	(1, 'การประเมินผลงานประจำปี 2026 - มานะ (ประธาน)', 1, 1, 'PRESIDENT', '2026-08-01 00:00:00', '2026-08-31 23:59:59', 1, 'IN_PROGRESS', '/uploads/documents/doc_eval_1_1787243481251.pdf', NULL, '2026-08-17 06:45:33', NULL),
+	(2, 'การประเมินผลงานประจำปี 2026 - มานะ (กรรมการ)', 2, 1, 'MEMBER', '2026-08-01 00:00:00', '2026-08-31 23:59:59', 1, 'COMPLETED', NULL, NULL, '2026-08-17 06:45:33', NULL),
+	(3, 'การประเมินผลงานประจำปี 2026 - ปิติ (ประธาน)', 1, 2, 'PRESIDENT', '2026-08-01 00:00:00', '2026-08-31 23:59:59', 1, 'PENDING', NULL, NULL, '2026-08-18 15:25:54', NULL);
 
 -- Dumping structure for table evaluation.evidences
 CREATE TABLE IF NOT EXISTS `evidences` (
@@ -133,8 +138,7 @@ CREATE TABLE IF NOT EXISTS `evidences` (
   `file_path` varchar(500) NOT NULL COMMENT 'ตำแหน่งไฟล์หรือลิงก์ URL',
   `uploaded_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'วันเวลาที่อัปโหลด',
   PRIMARY KEY (`evidence_id`),
-  KEY `score_id` (`score_id`),
-  CONSTRAINT `1` FOREIGN KEY (`score_id`) REFERENCES `evaluation_scores` (`score_id`) ON DELETE CASCADE
+  KEY `score_id` (`score_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลไฟล์หลักฐานประกอบการประเมิน';
 
 -- Dumping data for table evaluation.evidences: ~2 rows (approximately)
