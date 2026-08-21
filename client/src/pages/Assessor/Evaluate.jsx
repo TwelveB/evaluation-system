@@ -4,19 +4,24 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas-pro';
 
 function Evaluate() {
+  // ดึงค่าพารามิเตอร์ id จาก URL (เช่น id ของการประเมิน)
   const { id } = useParams();
+  // ใช้สำหรับนำทางหรือเปลี่ยนหน้าต่าง ๆ ในแอปพลิเคชัน
   const navigate = useNavigate();
+  // ใช้สำหรับอ้างอิงไปยัง DOM element ที่จะถูกนำไปสร้างเป็นไฟล์ PDF
   const printRef = useRef(null);
 
-  const [criteria, setCriteria] = useState([]);
-  const [scores, setScores] = useState({});
-  const [comments, setComments] = useState({});
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [existingDocPath, setExistingDocPath] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  // ประกาศ State เพื่อใช้เก็บข้อมูลสถานะต่าง ๆ ในระบบ
+  const [criteria, setCriteria] = useState([]); // เก็บรายการเกณฑ์การประเมิน
+  const [scores, setScores] = useState({}); // เก็บข้อมูลคะแนนที่ผู้ประเมินกรอก (Key: criterion_id, Value: score)
+  const [comments, setComments] = useState({}); // เก็บข้อมูลข้อเสนอแนะที่ผู้ประเมินกรอก
+  const [selectedFile, setSelectedFile] = useState(null); // เก็บไฟล์ PDF ที่ผู้ใช้เลือกอัปโหลด
+  const [existingDocPath, setExistingDocPath] = useState(null); // เก็บพาธ (Path) ของไฟล์เอกสารเดิมที่มีอยู่ในระบบ
+  const [loading, setLoading] = useState(true); // สถานะระหว่างดึงข้อมูลจาก API
+  const [saving, setSaving] = useState(false); // สถานะระหว่างส่งข้อมูลไปบันทึก
+  const [errorMsg, setErrorMsg] = useState(''); // เก็บข้อความแจ้งเตือนข้อผิดพลาด
 
+  // ฟังก์ชันสำหรับดึงข้อมูลเกณฑ์การประเมินและคะแนนเดิมจากฐานข้อมูลผ่าน API
   const fetchCriteriaAndScores = async () => {
     try {
       const res = await fetch(`http://localhost:5000/api/assessor/evaluation-criteria/${id}`);
@@ -24,13 +29,14 @@ function Evaluate() {
       
       const data = await res.json();
       
-      // ปรับตามโครงสร้างResponse ใหม่
+      // อัปเดตข้อมูลเกณฑ์การประเมินและไฟล์เอกสารลงใน State
       setCriteria(data.criteria || []);
       setExistingDocPath(data.document_path || null);
 
       const initialScores = {};
       const initialComments = {};
       
+      // ตรวจสอบว่าถ้าเคยมีการให้คะแนนหรือคอมเมนต์มาก่อนหน้านี้ ให้นำมาตั้งเป็นค่าเริ่มต้น
       (data.criteria || []).forEach((item) => {
         if (item.score !== null && item.score !== undefined) {
           initialScores[item.criterion_id] = item.score;
@@ -46,34 +52,40 @@ function Evaluate() {
       console.error(err);
       setErrorMsg('เกิดข้อผิดพลาดในการโหลดข้อมูล');
     } finally {
+      // เมื่อดึงข้อมูลสำเร็จหรือเกิดข้อผิดพลาด ให้หยุดสถานะ Loading
       setLoading(false);
     }
   };
 
+  // เรียกใช้งานฟังก์ชัน fetchCriteriaAndScores ครั้งแรกที่คอมโพเนนต์ถูกเรนเดอร์ หรือเมื่อ id เปลี่ยนไป
   useEffect(() => {
     if (id) {
       fetchCriteriaAndScores();
     }
   }, [id]);
 
+  // ฟังก์ชันอัปเดต State ของ scores เมื่อผู้ใช้คลิกเลือกคะแนน
   const handleScoreChange = (criterionId, val) => {
     setScores((prev) => ({ ...prev, [criterionId]: val }));
   };
 
+  // ฟังก์ชันอัปเดต State ของ comments เมื่อผู้ใช้พิมพ์ข้อเสนอแนะ
   const handleCommentChange = (criterionId, val) => {
     setComments((prev) => ({ ...prev, [criterionId]: val }));
   };
 
+  // ฟังก์ชันจัดการการอัปโหลดไฟล์ ตรวจสอบว่าเป็นไฟล์ PDF เท่านั้น
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type === 'application/pdf') {
       setSelectedFile(file);
     } else {
       alert('กรุณาเลือกเฉพาะไฟล์ PDF เท่านั้น');
-      e.target.value = null;
+      e.target.value = null; // รีเซ็ตค่า input หากไฟล์ไม่ใช่ PDF
     }
   };
 
+  // ฟังก์ชันคำนวณคะแนนรวมทั้งหมดที่ผู้ใช้ได้เลือกไว้
   const calculateTotalScore = () => {
     return criteria.reduce((sum, item) => {
       const s = parseFloat(scores[item.criterion_id]) || 0;
@@ -81,19 +93,21 @@ function Evaluate() {
     }, 0);
   };
 
+  // ฟังก์ชันสำหรับแปลงข้อมูลในหน้าจอ (ส่วน printRef) ให้กลายเป็นรูปภาพแล้วส่งออกเป็นไฟล์ PDF
   const exportToPDF = async () => {
     const element = printRef.current;
     if (!element) return;
 
     try {
+      // ใช้ html2canvas วาด DOM element ให้ออกมาเป็นรูปภาพ (Canvas)
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 2, // เพิ่มความละเอียดภาพ
         useCORS: true,
         backgroundColor: '#ffffff',
       });
 
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdf = new jsPDF('p', 'mm', 'a4'); // สร้างเอกสาร PDF แนวตั้ง ขนาด A4
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
@@ -106,21 +120,24 @@ function Evaluate() {
     }
   };
 
+  // ฟังก์ชันส่งข้อมูลการประเมินทั้งหมด (รวมถึงไฟล์เอกสาร) ไปยัง API เพื่อบันทึกลงฐานข้อมูล
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // ป้องกันการรีเฟรชหน้าเว็บเมื่อกด Submit
     setSaving(true);
 
+    // จัดเตรียมข้อมูลคะแนนและข้อเสนอแนะให้อยู่ในรูปแบบอาร์เรย์
     const scoresPayload = criteria.map((c) => ({
       criterion_id: c.criterion_id,
       score: scores[c.criterion_id] !== undefined ? parseFloat(scores[c.criterion_id]) : null,
       comment: comments[c.criterion_id] || ''
     }));
 
-    // ส่งข้อมูลในรูปแบบ FormData
+    // เนื่องจากมีการอัปโหลดไฟล์ จึงต้องส่งข้อมูลในรูปแบบ FormData แทน JSON ปกติ
     const formData = new FormData();
     formData.append('evaluation_id', id);
     formData.append('scores', JSON.stringify(scoresPayload));
     
+    // ถ้าผู้ใช้เลือกไฟล์ใหม่ ให้แนบไฟล์ไปด้วย
     if (selectedFile) {
       formData.append('document', selectedFile);
     }
@@ -128,12 +145,13 @@ function Evaluate() {
     try {
       const res = await fetch('http://localhost:5000/api/assessor/save-scores', {
         method: 'POST',
-        body: formData // ส่งเป็น FormData
+        body: formData // ส่ง Request เป็น FormData
       });
 
       if (!res.ok) throw new Error('บันทึกไม่สำเร็จ');
 
       alert('บันทึกผลการประเมินและแนบไฟล์เรียบร้อยแล้ว');
+      // ย้อนกลับไปหน้าตรวจสอบรายชื่อนักศึกษา
       navigate('/Assessor/StudentList');
     } catch (err) {
       console.error(err);
@@ -143,11 +161,13 @@ function Evaluate() {
     }
   };
 
+  // แสดงผลลัพธ์ระหว่างรอโหลด หรือหากเกิดข้อผิดพลาด
   if (loading) return <div className="p-6 text-white">กำลังโหลดข้อมูล...</div>;
   if (errorMsg) return <div className="p-6 text-rose-400">{errorMsg}</div>;
 
   return (
     <div className="p-6 max-w-4xl mx-auto text-slate-200">
+      {/* ส่วนหัวเรื่องและปุ่มส่งออกรายงาน PDF */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-sky-400">แบบประเมินผลการทำงาน</h1>
         
@@ -176,6 +196,7 @@ function Evaluate() {
             className="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-500 cursor-pointer"
           />
 
+          {/* แสดงลิงก์เพื่อเปิดดูไฟล์ หากเคยมีการอัปโหลดไฟล์ไว้แล้ว */}
           {existingDocPath && (
             <div className="pt-2 text-xs text-slate-300 flex items-center gap-2">
               <span>เอกสารหลักฐานปัจจุบัน:</span>
@@ -191,9 +212,10 @@ function Evaluate() {
           )}
         </div>
 
-        {/* ส่วนรายการเกณฑ์การประเมิน */}
+        {/* ส่วนรายการเกณฑ์การประเมิน: ทำการลูปเพื่อเรนเดอร์ UI ตามจำนวนเกณฑ์ */}
         {criteria.map((item, idx) => (
           <div key={item.criterion_id} className="p-4 bg-slate-800 border border-slate-700 rounded-xl">
+            {/* แสดงชื่อและน้ำหนักของแต่ละเกณฑ์ */}
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-semibold text-white">
                 {idx + 1}. {item.title}
@@ -209,6 +231,8 @@ function Evaluate() {
 
             <div className="mb-3">
               <label className="block text-xs font-medium text-slate-300 mb-2">ให้คะแนน:</label>
+              
+              {/* ตรวจสอบประเภทการประเมิน ว่าเป็นแบบเลือกใช่/ไม่ใช่ (YES_NO) หรือระบุคะแนนตามช่วง */}
               {item.evaluation_type === 'YES_NO' ? (
                 <div className="flex gap-4">
                   {[
@@ -230,6 +254,7 @@ function Evaluate() {
                 </div>
               ) : (
                 <div className="flex gap-3">
+                  {/* สร้างตัวเลือก Radio Button ตั้งแต่คะแนนต่ำสุด (min_score) จนถึงสูงสุด (max_score) */}
                   {Array.from(
                     { length: item.max_score - item.min_score + 1 },
                     (_, i) => item.min_score + i
@@ -250,6 +275,7 @@ function Evaluate() {
               )}
             </div>
 
+            {/* ส่วนกล่องข้อความสำหรับรับข้อเสนอแนะเพิ่มเติม */}
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1">
                 ความคิดเห็น / ข้อเสนอแนะ:
@@ -265,6 +291,7 @@ function Evaluate() {
           </div>
         ))}
 
+        {/* ปุ่มกดยกเลิก หรือ ส่งข้อมูลการประเมิน */}
         <div className="flex justify-end gap-3 pt-4">
           <button
             type="button"
@@ -284,7 +311,10 @@ function Evaluate() {
         </div>
       </form>
 
-      {/* ตารางสรุป PDF เบื้องหลัง */}
+      {/* ========================================== */}
+      {/* ตารางสรุปสำหรับออก PDF */}
+      {/* ส่วนนี้จะถูกซ่อนจากหน้าจอปกติด้วย overflow-hidden h-0 w-0 แต่นำไปใช้กับฟังก์ชัน exportToPDF */}
+      {/* ========================================== */}
       <div className="overflow-hidden h-0 w-0">
         <div 
           ref={printRef} 
@@ -335,6 +365,7 @@ function Evaluate() {
             </tfoot>
           </table>
 
+          {/* ส่วนสำหรับให้ผู้ประเมินเซ็นชื่อรับรอง */}
           <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'flex-end' }}>
             <div style={{ textAlign: 'center', width: '200px' }}>
               <div style={{ borderBottom: '1px solid #000', marginBottom: '8px', height: '40px' }}></div>
