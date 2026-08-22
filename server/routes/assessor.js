@@ -99,10 +99,12 @@ router.get('/showEvaluationStudent/:id', async (req, res) => {
 // ==========================================
 // API: ดึงข้อมูลการประเมินตาม ID ของนักศึกษา (ดึงแค่ตาราง evaluations)
 // ==========================================
-router.get('/showEvaluations:id=:id', async (req, res) => {
+router.get('/showEvaluations/:id', async (req, res) => {
   try {
     const student_id = parseInt(req.params.id);
-    const result = await db.query('SELECT * FROM evaluations WHERE student_id = ?', [student_id]);
+    const result = await db.query(`SELECT e.evaluation_id, e.title, e.start_date, a.first_name, a.last_name FROM evaluations e 
+      JOIN assessors a ON e.assessor_id = a.assessor_id
+      WHERE e.student_id = ?`, [student_id]);
 
     if (result.length === 0) {
       return res.status(404).json({ error: 'ไม่พบข้อมูลการประเมินสำหรับ student_id ที่ระบุ' });

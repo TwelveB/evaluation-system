@@ -34,7 +34,9 @@ function Login() {
       window.location.replace('/Login/Student');
     };
 
-
+  const handleNavigate = (path) => {
+    navigate(`/Student/${path}`);
+  }
 
   useEffect(() => {
     CheckToken();
@@ -64,30 +66,24 @@ function Login() {
             EvaluateHub
           </span>
           <span className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-full font-medium">
-            Dashboard
+            Student Dashboard
           </span>
         </div>
 
         {/* Quick Login / Role Switcher */}
         <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-400 hidden sm:inline">Sign in as:</span>
+          <span className="text-sm text-slate-400 hidden sm:inline">Menu:</span>
           <button
-            onClick={() => handleRoleNavigate('Student')}
-            className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-600/30 text-purple-300 border border-purple-500/40 hover:bg-purple-600 hover:text-white transition-all"
-          >
-            Student
-          </button>
-          <button
-            onClick={() => handleRoleNavigate('Assessor')}
+            onClick={() => handleNavigate('/MyEvaluate')}
             className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600 hover:text-white transition-all"
           >
-            Assessor
+            ดูรอบการประเมินของตัวเอง
           </button>
           <button
-            onClick={() => handleRoleNavigate('Admin')}
-            className="px-4 py-1.5 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition-all flex items-center gap-1.5"
+            onClick={() => handleNavigate('/')}
+            className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600/30 text-blue-300 border border-blue-500/40 hover:bg-blue-600 hover:text-white transition-all"
           >
-            <span>👨‍💼</span> Login Admin
+            หน้าหลัก
           </button>
         </div>
       </header>

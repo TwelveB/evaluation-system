@@ -14,7 +14,16 @@ function Login() {
     const studentToken = localStorage.getItem("studentToken");
 
     if (assessorToken || adminToken || studentToken) {
-      window.location.replace("/");
+      if (assessorToken) {
+        window.location.replace("/Assessor");
+      }else if (adminToken) {
+        window.location.replace("/Admin");
+      }else if (studentToken) {
+        window.location.replace("/Student");
+      }else {
+        window.location.replace("/");
+      }
+
       return
     }
   }

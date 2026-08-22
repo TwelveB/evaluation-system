@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 
-function Login() {
+function Student() {
   const navigate = useNavigate();
   const [studentInfo, setStudentInfo] = useState(null);
 
@@ -44,5 +44,5 @@ function Login() {
   );
 }
 
-export default Login; 
+export default Student; 
 
