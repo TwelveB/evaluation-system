@@ -6,6 +6,7 @@ function App() {
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [Token, setToken] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const fetchStudents = async () => {
@@ -22,12 +23,30 @@ function App() {
     }
   };
 
+  const CheckToken = () => {
+    const studentToken = localStorage.getItem("studentToken");
+    const adminToken = localStorage.getItem("adminToken");
+    const assessorToken = localStorage.getItem("assessorToken");
+    
+    if (studentToken || adminToken || assessorToken) {
+      setToken(true);
+    }else {
+      setToken(false);
+    }
+  }
+
+  const Logout = () => {
+    localStorage.clear();
+    window.location.reload();
+  }
+
   const handleRoleNavigate = (role) => {
     navigate(`/Login/${role}`);
   };
 
   useEffect(() => {
     fetchStudents();
+    CheckToken();
   }, []);
 
   return (
@@ -46,6 +65,8 @@ function App() {
 
         {/* Quick Login / Role Switcher */}
         <div className="flex items-center gap-3">
+          {!Token ? (
+          <>
           <span className="text-sm text-slate-400 hidden sm:inline">Sign in as:</span>
           <button
             onClick={() => handleRoleNavigate('Student')}
@@ -65,6 +86,19 @@ function App() {
           >
             <span>👨‍💼</span> Login Admin
           </button>
+     
+        </>
+          ) : (
+            <>
+              <button
+                onClick={() => Logout()}
+                className="px-4 py-1.5 text-xs font-bold rounded-lg bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/30 transition-all flex items-center gap-1.5"
+              >
+                <span>👨‍💼</span> Log out
+              </button>
+            </>
+          )
+        }
         </div>
       </header>
 
