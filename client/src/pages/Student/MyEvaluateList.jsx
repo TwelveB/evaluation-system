@@ -39,6 +39,10 @@ function MyEvaluateList() {
     }
   };
 
+  const NavigateToEvaluate = (id) => {
+    navigate(`/Student/MyEvaluate/${id}`);
+  }
+
   useEffect(() => {
     const token = CheckToken();
     if (token) {
@@ -74,9 +78,9 @@ function MyEvaluateList() {
                 {evaluate && evaluate.length > 0 ? (
                   evaluate.map((row, idx) => (
                     <tr 
-                      key={row.id || idx} 
+                      key={row.evaluation_id || idx} 
                       className="hover:bg-slate-700/40 transition-colors duration-200"
-                      onClick={()=> {console.log("clicked")}}
+                      onClick={()=> NavigateToEvaluate(row.evaluation_id)}
                     >
                       <td className="py-4 px-6 text-center font-medium text-slate-400">
                         {idx + 1}

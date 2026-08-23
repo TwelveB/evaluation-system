@@ -19,7 +19,8 @@ import LoginDashboard from './pages/Login/Dashboard.jsx'
 
 import StudentOutlet from './pages/Student/StudentOutlet.jsx'
 import Student from './pages/Student/Student.jsx'
-import MyEvaluate from './pages/Student/MyEvaluateList.jsx'
+import MyEvaluateList from './pages/Student/MyEvaluateList.jsx'
+import MyEvaluate from './pages/Student/MyEvaluate.jsx'
 
 import AssessorOutlet from './pages/Assessor/AssessorOutlet.jsx'
 import Assessor from './pages/Assessor/Assessor.jsx'
@@ -43,7 +44,8 @@ createRoot(document.getElementById('root')).render(
 
         <Route path="/Student" element={<StudentOutlet/>} >
           <Route index element={<Student/>} />
-          <Route path="MyEvaluate" element={<MyEvaluate/>}/>
+          <Route path="MyEvaluateList" element={<MyEvaluateList/>}/>
+          <Route path="MyEvaluate/:id" element={<MyEvaluate/>}/>
         </Route>
 
         <Route path="/Assessor" element={<AssessorOutlet/>} >

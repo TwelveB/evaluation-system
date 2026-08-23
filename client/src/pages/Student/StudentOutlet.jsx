@@ -74,7 +74,7 @@ function Login() {
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-400 hidden sm:inline">Menu:</span>
           <button
-            onClick={() => handleNavigate('/MyEvaluate')}
+            onClick={() => handleNavigate('/MyEvaluateList')}
             className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600 hover:text-white transition-all"
           >
             ดูรอบการประเมินของตัวเอง
