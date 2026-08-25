@@ -24,18 +24,6 @@ function AddStudent() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const fetchStudents = async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/students');
-      const data = await res.json();
-      setStudents(data);
-    } catch (err) {
-      console.error('Error fetching students:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
 const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -52,7 +40,7 @@ const handleSubmit = async (e) => {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/assessor', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/assessor`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -88,10 +76,6 @@ const handleSubmit = async (e) => {
   const GoBack = () => {
     navigate(-1);
   };
-
-  useEffect(() => {
-    fetchStudents();
-  }, []);
 
   
   return (

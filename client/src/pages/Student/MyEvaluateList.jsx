@@ -27,7 +27,7 @@ function MyEvaluateList() {
   const FetchEvaluate = async (studentId) => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/assessor/showEvaluations/${studentId}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/assessor/showEvaluations/${studentId}`);
       if (!res.ok) throw new Error('Failed to fetch data');
 
       const data = await res.json();

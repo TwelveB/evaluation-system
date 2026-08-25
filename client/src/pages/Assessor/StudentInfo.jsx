@@ -10,7 +10,7 @@ function StudentInfo() {
 
   const FetchStudent = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/assessor/showEvaluationStudent/${id}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/assessor/showEvaluationStudent/${id}`);
       const result = await res.json();
       setData(result);
     } catch (err) {

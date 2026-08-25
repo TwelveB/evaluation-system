@@ -10,7 +10,7 @@ function StudentList() {
 
   const FetchStudent = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/students');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/students`);
       const result = await res.json();
       setData(result);
     } catch (err) {

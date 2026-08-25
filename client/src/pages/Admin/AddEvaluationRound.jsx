@@ -20,8 +20,8 @@ function AddEvaluationRound() {
     const fetchData = async () => {
       try {
         const [resStudents, resAssessors] = await Promise.all([
-          fetch('http://localhost:5000/api/students'),
-          fetch('http://localhost:5000/api/assessor')
+          fetch(`${import.meta.env.VITE_API_URL}/api/students`),
+          fetch(`${import.meta.env.VITE_API_URL}/api/assessor`)
         ]);
 
         if (resStudents.ok) setStudents(await resStudents.json());
@@ -48,7 +48,7 @@ function AddEvaluationRound() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admins/evaluations', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admins/evaluations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

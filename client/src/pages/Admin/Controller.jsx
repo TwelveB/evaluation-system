@@ -10,7 +10,7 @@ function Administator() {
 
   const fetchStudents = async () => {
     try { 
-      const res = await fetch('http://localhost:5000/api/students');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/students`);
       const data = await res.json();
       setStudents(data);
     } catch (err) {

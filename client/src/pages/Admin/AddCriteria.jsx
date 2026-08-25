@@ -19,7 +19,7 @@ function AddCriteria() {
 
   const fetchCriteria = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admins/criteria');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admins/criteria`);
       if (res.ok) {
         const data = await res.json();
         setCriteriaList(data);
@@ -58,7 +58,7 @@ function AddCriteria() {
         max_score: formData.evaluation_type === 'YES_NO' ? 1 : parseInt(formData.max_score),
       };
 
-      const res = await fetch('http://localhost:5000/api/admins/criteria', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admins/criteria`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
