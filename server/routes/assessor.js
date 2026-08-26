@@ -1,13 +1,23 @@
 const SECRET_KEY = process.env.SECRET_KEY || "1";
 const express = require('express');
 const bcrypt = require('bcrypt'); // ใช้สำหรับเข้ารหัสผ่าน (Hashing)
-const jwt = require('jsonwebtoken'); // ใช้สำหรับทำ Token (แม้ในไฟล์นี้จะยังไม่ได้ใช้โดยตรง)
-const cors = require('cors');
 const db = require('../db'); // เชื่อมต่อฐานข้อมูล
 const path = require('path');
 const fs = require('fs'); // ใช้จัดการไฟล์/โฟลเดอร์ในระบบ
 const multer = require('multer'); // ไลบรารีสำหรับจัดการการอัปโหลดไฟล์ (File Upload)
 require('dotenv').config();
+
+// ==========================================
+// 1. นำเข้าและตั้งค่า Cloudinary
+// ==========================================
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const router = express.Router(); // สร้างตัวจัดการเส้นทาง (Router)
 
@@ -117,38 +127,33 @@ router.get('/showEvaluations/:id', async (req, res) => {
   }
 });
 
+
+
 // ==========================================
-// การตั้งค่า MULTER สำหรับจัดการและเก็บไฟล์ PDF ที่อัปโหลดเข้ามา
+// 2. การตั้งค่า MULTER ให้ส่งไฟล์ไปที่ Cloudinary
 // ==========================================
-const storage = multer.diskStorage({
-  // กำหนดโฟลเดอร์ปลายทางที่จะเก็บไฟล์
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads/documents');
-    // ถ้าโฟลเดอร์ยังไม่มีอยู่ ให้ระบบสร้างขึ้นมาอัตโนมัติ (recursive: true)
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'evaluation_documents', // ชื่อโฟลเดอร์ที่จะถูกสร้างใน Cloudinary
+    resource_type: 'auto', // ให้ Cloudinary จัดการชนิดไฟล์อัตโนมัติ (จำเป็นสำหรับ PDF)
+    allowed_formats: ['pdf'], // อนุญาตเฉพาะไฟล์ PDF
+
+    // ** เพิ่ม 2 บรรทัดนี้เพื่อจัดการไฟล์ซ้ำและ Cache **
+    overwrite: true,     // บังคับให้เซฟทับไฟล์เดิมทันทีหากชื่อซ้ำกัน
+    invalidate: true,    // สั่งเคลียร์ Cache เดิมบนเครือข่าย CDN ของ Cloudinary
+    
+    public_id: (req, file) => {
+      // ตั้งชื่อไฟล์ (ไม่ต้องใส่นามสกุล .pdf เดี๋ยวระบบจัดการให้)
+      const evaluationId = req.params.evaluation_id || req.body.evaluation_id;
+      return `doc_eval_${evaluationId}`;
     }
-    cb(null, uploadDir); // ส่ง path กลับไปให้ multer
-  },
-  // กำหนดชื่อไฟล์ใหม่ เพื่อป้องกันชื่อไฟล์ซ้ำกัน
-  filename: (req, file, cb) => {
-    const evaluationId = req.params.evaluation_id || req.body.evaluation_id;
-    const uniqueSuffix = Date.now(); // ใช้เวลาปัจจุบันมาต่อท้ายชื่อไฟล์
-    cb(null, `doc_eval_${evaluationId}_${uniqueSuffix}.pdf`);
   }
 });
 
 // นำการตั้งค่า storage ไปสร้างเป็น middleware ของ multer
 const upload = multer({
   storage: storage,
-  // คัดกรองไฟล์: อนุญาตเฉพาะไฟล์นามสกุล .pdf เท่านั้น
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('รองรับเฉพาะไฟล์ PDF เท่านั้น'), false);
-    }
-  },
   limits: { fileSize: 10 * 1024 * 1024 } // จำกัดขนาดไฟล์สูงสุดไม่เกิน 10MB
 });
 
@@ -208,13 +213,17 @@ router.post('/save-scores', upload.single('document'), async (req, res) => {
     }
 
     // 1. ถ้ามีไฟล์แนบเข้ามา (req.file มีค่า) ให้อัปเดต Path ของไฟล์ใหม่ลงตาราง evaluations
+    //เปลี่ยนแปลงตรงนี้: req.file.path จะเป็น URL จริงจาก Cloudinary ทันที
     if (req.file) {
-      const documentPath = `/uploads/documents/${req.file.filename}`;
+      // ตัวอย่างค่าที่ได้: https://res.cloudinary.com/your-cloud/image/upload/v123456/evaluation_documents/doc_eval_1_163...pdf
+      const documentPath = req.file.path; 
+      
       await db.query(
         'UPDATE evaluations SET document_path = ? WHERE evaluation_id = ?',
         [documentPath, evaluation_id]
       );
     }
+
 
     // 2. เตรียมคำสั่ง SQL สำหรับบันทึกคะแนน
     // ใช้ ON DUPLICATE KEY UPDATE: ถ้ายังไม่เคยให้คะแนนจะทำการ INSERT แต่ถ้าเคยให้แล้ว(ซ้ำ)จะทำการ UPDATE

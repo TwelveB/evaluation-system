@@ -1,6 +1,6 @@
 const express = require('express'); // นำเข้า Express.js สำหรับสร้าง Web Server
 const cors = require('cors'); // นำเข้า CORS เพื่ออนุญาตให้ Frontend (ที่อยู่คนละ Port) เรียกใช้งาน API ได้
-const path = require('path'); // นำเข้า path สำหรับจัดการเส้นทางของไฟล์และโฟลเดอร์
+// const path = require('path'); // นำเข้า path สำหรับจัดการเส้นทางของไฟล์และโฟลเดอร์
 const db = require('./db'); // นำเข้าการตั้งค่าเชื่อมต่อฐานข้อมูล
 
 require('dotenv').config(); // โหลดตัวแปรระบบจากไฟล์ .env
@@ -15,7 +15,7 @@ app.use(express.json()); // อนุญาตให้เซิร์ฟเว�
 
 // **ส่วนสำคัญสำหรับการเข้าถึงไฟล์**: เปิดให้โฟลเดอร์ 'uploads' เป็นแบบ Public 
 // ทำให้ Frontend สามารถเข้าถึงไฟล์ (เช่น PDF) ผ่าน URL (เช่น http://localhost:5000/uploads/...) ได้โดยตรง
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ==========================================
 // นำเข้า Routes (กลุ่มของ API ต่างๆ)
@@ -41,7 +41,7 @@ app.use('/api/login', loginRoutes);      // API สำหรับระบบ�
 app.get('/api/check-db', async (req, res) => {
   try {
     const result = await db.query('SELECT version();');
-    res.json(result.rows[0]);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -201,7 +201,7 @@ function Evaluate() {
             <div className="pt-2 text-xs text-slate-300 flex items-center gap-2">
               <span>เอกสารหลักฐานปัจจุบัน:</span>
               <a
-                href={`http://localhost:5000${existingDocPath}`}
+                href={`${existingDocPath}?t=${Date.now()}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sky-400 hover:underline flex items-center gap-1 font-medium"
