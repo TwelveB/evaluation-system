@@ -76,7 +76,7 @@ function MyEvaluateList() {
           {/* ปุ่มเปิดดูไฟล์หลักฐาน */}
           {documentPath && (
             <a
-              href={`http://localhost:5000${documentPath}`}
+              href={`${existingDocPath}?t=${Date.now()}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 transition font-medium text-sm w-fit"
