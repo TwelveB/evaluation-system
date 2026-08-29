@@ -5,12 +5,18 @@ require('dotenv').config();
 const pool = mariadb.createPool({
      host: process.env.DB_HOST, 
      user: process.env.DB_USER, 
+     port: process.env.DB_PORT,
      password: process.env.DB_PASSWORD,
      database: process.env.DB_NAME,
      //ฟังก์ชั่นเสริม
-     connectionLimit: 5,
+     waitForConnections: true,
+     connectionLimit: 10,
      insertIdAsNumber: true,
-     bigIntAsNumber: true // 👈 เพิ่มบรรทัดนี้เพื่อให้แปลง BIGINT เป็น Number ใน JS
+     bigIntAsNumber: true, // 👈 เพิ่มบรรทัดนี้เพื่อให้แปลง BIGINT เป็น Number ใน JS
+     //บังคับ
+     ssl: {
+        rejectUnauthorized: true // บังคับเปิดใช้งาน SSL สำหรับ TiDB Cloud
+    }
 });
 
 // ตรวจสอบการเชื่อมต่อ
