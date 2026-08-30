@@ -7,10 +7,20 @@ require('dotenv').config(); // โหลดตัวแปรระบบจา�
 
 const app = express();
 
+// const corsOption = {
+//   origin: 'https://yourfrontend.com', // Allow only this origin
+//   // methods: 'GET,POST,PUT,DELETE',     // Allowed HTTP methods
+//   // optionsSuccessStatus: 200            // For legacy browser support
+// } 
 // ==========================================
 // Middleware (ตัวกลางสำหรับจัดการ Request ก่อนไปถึง Route)
 // ==========================================
+//อนุญาติแบบเข้าได้ทุก url
 app.use(cors()); // อนุญาตการร้องขอข้ามโดเมน (Cross-Origin Resource Sharing)
+//เขียนแบบสั้นๆ ใส่แค่อนุญาติ url
+// app.use(cors(corsOption)); // อนุญาตการร้องขอข้ามโดเมน (Cross-Origin Resource Sharing)
+//แบบละเอียดที่มีตั้งหลาย url กับ อนุญาติ postman
+// app.use(cors(corsOption));
 app.use(express.json()); // อนุญาตให้เซิร์ฟเวอร์รับส่งข้อมูลในรูปแบบ JSON ได้
 
 // **ส่วนสำคัญสำหรับการเข้าถึงไฟล์**: เปิดให้โฟลเดอร์ 'uploads' เป็นแบบ Public 
